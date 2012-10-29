@@ -10,4 +10,11 @@
 
 @implementation MappingProvider
 
++ (id) mappingProvider: (void(^)(MappingProvider*)) block {
+    MappingProvider* provider = [MappingProvider new];
+    NSAssert(block, @"You need a configuration block");
+    block(provider);
+    return provider;
+}
+
 @end

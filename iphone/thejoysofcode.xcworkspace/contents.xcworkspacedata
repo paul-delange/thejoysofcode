@@ -4,4 +4,10 @@
    <FileRef
       location = "group:TheJoysOfCode/TheJoysOfCode.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:RestKit/RestKit.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:hpple/Hpple.xcodeproj">
+   </FileRef>
 </Workspace>

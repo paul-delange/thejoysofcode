@@ -10,4 +10,6 @@
 
 @interface MappingProvider : RKObjectMappingProvider
 
++ (id) mappingProvider: (void(^)(MappingProvider*)) block;
+
 @end

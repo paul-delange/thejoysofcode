@@ -9,7 +9,6 @@
 #import <RestKit/RestKit.h>
 
 typedef void(^RKObjectLoaderWillMapDataBlock)(id* mappableData);
-typedef void(^RKRequestWillSendRequestBlock)(RKRequest* request);
 
 @protocol RKObjectLoaderDelegate <RKObjectLoaderDelegate>
 @optional
@@ -21,14 +20,5 @@ typedef void(^RKRequestWillSendRequestBlock)(RKRequest* request);
 
 @property (nonatomic, copy) RKObjectLoaderWillMapDataBlock onWillMapData;
 
-- (void) setModifiedSinceDate: (NSDate*) date;
-
 @end
 
-#define RKRequestCachePolicyControlMaxAge 1 << 7
-
-@interface RKRequest (Extended)
-
-@property (nonatomic, readonly, copy) RKRequestWillSendRequestBlock onWillSendRequest;
-
-@end

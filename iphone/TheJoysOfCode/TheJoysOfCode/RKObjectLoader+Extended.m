@@ -8,8 +8,6 @@
 
 #import "RKObjectLoader+Extended.h"
 
-#import "CurrentUser.h"
-
 #import <objc/runtime.h>
 #import <RestKit/RKObjectMapperError.h>
 
@@ -83,7 +81,7 @@ static NSString * const kHTTPCacheControl = @"Cache-Control";
 }
 
 - (void) setOnDidFailWithError:(RKObjectLoaderDidFailWithErrorBlock)onDidFailWithError {
-    NSAssert(0, @"You should not be using this for SCMB");
+    NSAssert(0, @"You should not be using this for this app");
 }
 
 - (RKObjectLoaderDidFailWithErrorBlock) onDidFailWithError {
@@ -108,11 +106,6 @@ static NSString * const kHTTPCacheControl = @"Cache-Control";
                 }
                 case RKRequestBaseURLOfflineError:
                 {   //Server was not reachable
-                    NSString* desc = NSLocalizedString(@"Impossible de se connecter au serveur de Se Coucher Moins Bête. Veuillez réessayer ultérieurement.", @"");
-                    NSError* offline = [NSError errorWithDomain: SCMBErrorDomain
-                                                           code: SCMBErrorCodeServerOffline
-                                                       userInfo: @{ NSLocalizedDescriptionKey : desc}];
-                    [errors addObject: offline];
                     break;
                 }
                 case RKObjectMapperErrorObjectMappingTypeMismatch:
@@ -121,11 +114,6 @@ static NSString * const kHTTPCacheControl = @"Cache-Control";
                 case RKObjectMapperErrorValidationFailure:
                 {
                     //We could not parse the response
-                    NSString* desc = NSLocalizedString(@"Réponse inconnue du serveur. Veuillez réessayer.", @"");
-                    NSError* unparseable = [NSError errorWithDomain: SCMBErrorDomain
-                                                               code: SCMBErrorCodeServerReturnedBadResponse
-                                                           userInfo: @{ NSLocalizedDescriptionKey : desc}];
-                    [errors addObject: unparseable];
                     break;
                 }
                 case RKObjectMapperErrorFromMappingResult:
@@ -137,196 +125,13 @@ static NSString * const kHTTPCacheControl = @"Cache-Control";
                 case RKRequestConnectionTimeoutError:
                 {
                     //Server timed out
-                    NSString* desc = NSLocalizedString(@"Se Coucher Moins Bête est long à répondre. Attendez quelques minutes et réessayez.", @"");
-                    NSError* timeout = [NSError errorWithDomain: SCMBErrorDomain
-                                                           code: SCMBErrorCodeServerTimedOut
-                                                       userInfo: @{ NSLocalizedDescriptionKey : desc}];
-                    [errors addObject: timeout];
                     break;
                 }
                 default:
                     break;
             }
         }
-        else if( [error.domain isEqualToString: @"JKErrorDomain"] ) {
-            NSNumber* index = [error.userInfo objectForKey: @"JKAtIndexKey"];
-            if( index && index.integerValue == 0 ) {
-                NSAssert(self.response.isSuccessful, @"Response body was empty but the server returned something strange");
-                
-                if(self.onDidLoadObject)
-                    self.onDidLoadObject(nil);
-                
-                return;
-            }
-            else {
-                NSString* desc = NSLocalizedString(@"Réponse inconnue du serveur. Veuillez réessayer.", @"");
-                NSError* unparseable = [NSError errorWithDomain: SCMBErrorDomain
-                                                           code: SCMBErrorCodeServerReturnedBadResponse
-                                                       userInfo: @{ NSLocalizedDescriptionKey : desc}];
-                [errors addObject: unparseable];
-            }
-        }
-        
-        if( errors.count )
-            [[NSNotificationCenter defaultCenter] postNotificationName: kNotificationServerErrorOccurred
-                                                                object: self
-                                                              userInfo: @{ kServerErrorKey : errors}];
-        else {
-            
-            if(self.response.isSuccessful && self.onDidLoadObject )
-                self.onDidLoadObject(nil);
-            else {
-                [[GAI sharedInstance].defaultTracker trackException: NO withNSError: error];
-            }
-        }
     };
-}
-
-- (NSArray *)cachedObjects {
-    BOOL shouldDeleteFromCache = YES;
-    
-    if( [self.delegate respondsToSelector: @selector(objectLoaderHasCacheDeleteRights:)] ) {
-        shouldDeleteFromCache = (BOOL)[self.delegate performSelector: @selector(objectLoaderHasCacheDeleteRights:) withObject: self];
-    }
-    
-    if( shouldDeleteFromCache ) {
-        NSFetchRequest *fetchRequest = [self.mappingProvider fetchRequestForResourcePath:self.resourcePath];
-        if (fetchRequest) {
-            return [NSManagedObject objectsWithFetchRequest:fetchRequest];
-        }
-    }
-    
-    return nil;
-}
-
-- (void) setModifiedSinceDate: (NSDate*) date {
-    static NSDateFormatter* formatter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        formatter = [NSDateFormatter new];
-        [formatter setDateFormat: @"yyyy-MM-dd"];
-    });
-    
-    NSString* lastModified = [formatter stringFromDate: date];
-    if( lastModified.length )
-        self.resourcePath = [self.resourcePath stringByAppendingQueryParameters: @{ @"since" : lastModified }];
-}
-
-@end
-
-@implementation RKRequest (Extended)
-
-+ (void) load {
-    Method original, swizzled;
-    
-    original = class_getInstanceMethod(self, @selector(prepareURLRequest));
-    swizzled = class_getInstanceMethod(self, @selector(swizzled_prepareURLRequest));
-    
-    method_exchangeImplementations(original, swizzled);
-    
-    // Cache-Control support
-    // http://angelolloqui.com/blog/18-Restkit-addition-Cache-Control
-    Method shouldLoadFromCacheCustom = class_getInstanceMethod([RKRequest class], @selector(shouldLoadFromCacheCustom));
-    Method shouldLoadFromCache = class_getInstanceMethod([RKRequest class], @selector(shouldLoadFromCache));
-    NSAssert(shouldLoadFromCache, @"The current version of RestKit is not compatible with the Cache-Control additions");
-    method_exchangeImplementations(shouldLoadFromCache, shouldLoadFromCacheCustom);
-}
-
-- (RKRequestDidLoadResponseBlock) onDidLoadResponse {
-    return ^(RKResponse* response) {
-        //Extract the cookie for later...
-        for(NSHTTPCookie* cookie in response.cookies) {
-            NSAssert([cookie isKindOfClass: [NSHTTPCookie class]], @"Cookie is not a cookie");
-            if( [[cookie.name lowercaseString] isEqualToString: @"token"] ) {
-                CurrentUser* user = [CurrentUser findFirst];
-                user.cookie = cookie;
-                break;
-            }
-         }
-        
-        //Extract the authentication field
-        NSString* authentication = response.allHeaderFields[@"x-authenticated"];
-        if( authentication ) {
-            NSAssert([authentication isKindOfClass: [NSString class]], @"Authentication was not a number");
-            CurrentUser* user = [CurrentUser findFirst];
-            user.isAuthenticated = @(authentication.boolValue);
-        }
-    };
-}
-
-- (RKRequestWillSendRequestBlock) onWillSendRequest {
-    return ^(RKRequest* request) {
-        CurrentUser* user = [CurrentUser findFirst];
-        NSHTTPCookie* cookie = user.cookie;
-        if( cookie ) {
-            NSMutableDictionary* headers = [request.additionalHTTPHeaders mutableCopy];
-            NSArray* cookieArray = @[user.cookie];
-            NSDictionary* cookieHeaders = [NSHTTPCookie requestHeaderFieldsWithCookies: cookieArray];
-            [headers addEntriesFromDictionary: cookieHeaders];
-            request.additionalHTTPHeaders = headers;
-        }
-    };
-}
-
-- (BOOL) swizzled_prepareURLRequest {
-    [self.URLRequest setHTTPMethod:[self HTTPMethod]];
-    
-    if( self.onWillSendRequest ) {
-        self.onWillSendRequest(self);
-    }
-
-    return [self swizzled_prepareURLRequest];
-}
-
-- (BOOL)shouldLoadFromCacheCustom {
-    if ([self.cache hasResponseForRequest:self]) {
-        if (self.cachePolicy & RKRequestCachePolicyControlMaxAge) {
-            NSDictionary *headers = [self.cache headersForRequest:self];
-            
-            //Retrieve the Cache-Control header
-            NSString *cacheControl = [headers objectForKey:kHTTPCacheControl];
-            if (!cacheControl) {
-                //Check for lower case headers that could also match
-                for (NSString* responseHeader in headers) {
-                    if ([[responseHeader uppercaseString] isEqualToString:[kHTTPCacheControl uppercaseString]]) {
-                        cacheControl = [headers objectForKey:responseHeader];
-                        break;
-                    }
-                }
-            }
-            
-            if (cacheControl) {
-                
-                //Check the cache control max age
-                NSError *error = NULL;
-                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\\bmax-age=(\\d)+"
-                                                                                       options:NSRegularExpressionCaseInsensitive
-                                                                                         error:&error];
-                
-                NSRange rangeOfFirstMatch = [regex rangeOfFirstMatchInString:cacheControl options:0 range:NSMakeRange(0, [cacheControl length])];
-                if (rangeOfFirstMatch.location != NSNotFound) {
-                    NSInteger maxAge = [[cacheControl substringWithRange:NSMakeRange(rangeOfFirstMatch.location + 8, rangeOfFirstMatch.length - 8)] integerValue];
-                    NSDate* date = [self.cache cacheDateForRequest:self];
-                    NSTimeInterval interval = [[NSDate date] timeIntervalSinceDate:date];
-                    if (interval < maxAge) {
-                        DLog(@"Reusing cached result for %@ with maxAge %d and current age %d", [self.URL absoluteString], maxAge, (NSInteger)interval);
-                        return YES;
-                    }
-                }
-                
-                //Check the cache control no-cache
-                regex = [NSRegularExpression regularExpressionWithPattern:@"\\bno-cache\\b"
-                                                                  options:NSRegularExpressionCaseInsensitive
-                                                                    error:&error];
-                
-                rangeOfFirstMatch = [regex rangeOfFirstMatchInString:cacheControl options:0 range:NSMakeRange(0, [cacheControl length])];
-                if (rangeOfFirstMatch.location != NSNotFound) {
-                    return NO;
-                }
-            }
-        }
-    }
-    return [self shouldLoadFromCacheCustom];
 }
 
 @end

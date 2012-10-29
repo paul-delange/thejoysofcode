@@ -11,4 +11,9 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
+    #import <RestKit/RestKit.h>
+    #import "RKObjectLoader+Extended.h"
+
+    FOUNDATION_EXTERN RKObjectManager* kGlobalObjectManager(void);
+
 #endif

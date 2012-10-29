@@ -10,4 +10,6 @@
 
 @interface ContentProvider : NSObject
 
++ (NSString*) baseURL;
+
 @end

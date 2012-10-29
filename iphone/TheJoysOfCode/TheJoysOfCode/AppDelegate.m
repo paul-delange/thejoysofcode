@@ -7,11 +7,27 @@
 //
 
 #import "AppDelegate.h"
+#import "ContentProvider.h"
+#import "MappingProvider.h"
+
+#import "Post.h"
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+#if DEBUG
+    //See RestKit/Support/lcl_config_components.h
+    RKLogConfigureByName("RestKit", RKLogLevelCritical);
+    RKLogConfigureByName("RestKit/Network", RKLogLevelTrace);
+    RKLogConfigureByName("RestKit/Network/Queue", RKLogLevelCritical);
+    RKLogConfigureByName("RestKit/Network/Reachability", RKLogLevelCritical);
+    RKLogConfigureByName("RestKit/ObjectMapping", RKLogLevelCritical);
+    RKLogConfigureByName("RestKit/CoreData", RKLogLevelCritical);
+#else
+    RKLogConfigureByName("RestKit", RKLogLevelOff);
+#endif
+    
     // Override point for customization after application launch.
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         UISplitViewController *splitViewController = (UISplitViewController *)self.window.rootViewController;
@@ -48,4 +64,43 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (RKObjectManager*) objectManager {
+    if( !_objectManager ) {
+        _objectManager = [RKObjectManager objectManagerWithBaseURLString: [ContentProvider baseURL]];
+        _objectManager.objectStore = [RKManagedObjectStore objectStoreWithStoreFilename: @"DataBase.sqlite"];
+        _objectManager.objectStore.cacheStrategy = [RKFetchRequestManagedObjectCache new];
+        _objectManager.mappingProvider = [MappingProvider mappingProvider: ^(MappingProvider *provider) {
+            RKManagedObjectStore* store = _objectManager.objectStore;
+            
+            RKManagedObjectMapping* postMapping = [RKManagedObjectMapping mappingForEntityWithName: @"Post"
+                                                                              inManagedObjectStore: store];
+            postMapping.primaryKeyAttribute = @"primaryKey";
+            postMapping.rootKeyPath = @"response.posts";
+            [postMapping mapAttributes: @"title", @"picture", @"author", nil];
+            [postMapping mapKeyPathsToAttributes:
+             @"id", @"primaryKey",
+             @"date", @"publishedDate",
+             @"post_url", @"url",
+             nil];
+            
+            [provider setObjectMapping: postMapping
+                forResourcePathPattern: @"/posts"
+                 withFetchRequestBlock: ^NSFetchRequest *(NSString *resourcePath) {
+                     NSFetchRequest* fetchRequest = [Post fetchRequest];
+                     [fetchRequest setSortDescriptors: @[[NSSortDescriptor sortDescriptorWithKey: @"publishedDate" ascending: YES]]];
+                     return fetchRequest;
+                 }];
+            
+        }];
+    }
+    
+    return _objectManager;
+}
+
 @end
+
+
+RKObjectManager* kGlobalObjectManager(void) {
+    AppDelegate* app = ((AppDelegate*)[[UIApplication sharedApplication] delegate]);
+    return app.objectManager;
+}
