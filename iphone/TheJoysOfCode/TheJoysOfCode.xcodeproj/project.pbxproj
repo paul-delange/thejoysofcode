@@ -24,6 +24,11 @@
 		52260B77163EB436009ABEF9 /* XPathQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 52260B74163EB436009ABEF9 /* XPathQuery.m */; };
 		52260B7A163EB44C009ABEF9 /* libxml2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 52260B79163EB44C009ABEF9 /* libxml2.2.dylib */; };
 		52260B7D163EB538009ABEF9 /* RKObjectLoader+Extended.m in Sources */ = {isa = PBXBuildFile; fileRef = 52260B7C163EB538009ABEF9 /* RKObjectLoader+Extended.m */; };
+		52260B97163EDFE0009ABEF9 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52260B96163EDFE0009ABEF9 /* MediaPlayer.framework */; };
+		52260BA2163EE9AD009ABEF9 /* GIFDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 52260BA1163EE9AD009ABEF9 /* GIFDownloader.m */; };
+		52DC4244163FD05200B035B1 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52DC4243163FD05200B035B1 /* AVFoundation.framework */; };
+		52DC4247163FD06500B035B1 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52DC4246163FD06500B035B1 /* CoreMedia.framework */; };
+		52DC42491640068400B035B1 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52DC42481640068300B035B1 /* CoreVideo.framework */; };
 		52FADB29163E7F3F0015F0DB /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52FADB28163E7F3F0015F0DB /* UIKit.framework */; };
 		52FADB2B163E7F3F0015F0DB /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52FADB2A163E7F3F0015F0DB /* Foundation.framework */; };
 		52FADB2D163E7F3F0015F0DB /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52FADB2C163E7F3F0015F0DB /* CoreGraphics.framework */; };
@@ -37,6 +42,7 @@
 		52FADB45163E7F3F0015F0DB /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 52FADB43163E7F3F0015F0DB /* MainStoryboard_iPad.storyboard */; };
 		52FADB48163E7F3F0015F0DB /* MasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52FADB47163E7F3F0015F0DB /* MasterViewController.m */; };
 		52FADB4B163E7F3F0015F0DB /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52FADB4A163E7F3F0015F0DB /* DetailViewController.m */; };
+		52FDD31E16413F550042CCDC /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52FDD31D16413F550042CCDC /* ImageIO.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,7 +53,7 @@
 		52260B45163EA2EB009ABEF9 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		52260B47163EA2EF009ABEF9 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		52260B49163EA2F4009ABEF9 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		52260B4B163EA2F9009ABEF9 /* libRestKit.a */ = {isa = PBXFileReference; lastKnownFileType = file; name = libRestKit.a; path = "../RestKit/Build/Products/Release-iphoneos/libRestKit.a"; sourceTree = "<group>"; };
+		52260B4B163EA2F9009ABEF9 /* libRestKit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libRestKit.a; path = "../RestKit/Build/Products/Release-iphoneos/libRestKit.a"; sourceTree = "<group>"; };
 		52260B4E163EA3B6009ABEF9 /* DataBase.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataBase.xcdatamodel; sourceTree = "<group>"; };
 		52260B62163EA512009ABEF9 /* _Post.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _Post.m; sourceTree = "<group>"; };
 		52260B64163EA51A009ABEF9 /* Post.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Post.h; sourceTree = SOURCE_ROOT; };
@@ -62,6 +68,12 @@
 		52260B79163EB44C009ABEF9 /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = usr/lib/libxml2.2.dylib; sourceTree = SDKROOT; };
 		52260B7B163EB538009ABEF9 /* RKObjectLoader+Extended.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RKObjectLoader+Extended.h"; sourceTree = "<group>"; };
 		52260B7C163EB538009ABEF9 /* RKObjectLoader+Extended.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RKObjectLoader+Extended.m"; sourceTree = "<group>"; };
+		52260B96163EDFE0009ABEF9 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		52260BA0163EE9AD009ABEF9 /* GIFDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GIFDownloader.h; sourceTree = "<group>"; };
+		52260BA1163EE9AD009ABEF9 /* GIFDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GIFDownloader.m; sourceTree = "<group>"; };
+		52DC4243163FD05200B035B1 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		52DC4246163FD06500B035B1 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		52DC42481640068300B035B1 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		52FADB24163E7F3F0015F0DB /* TheJoysOfCode.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheJoysOfCode.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52FADB28163E7F3F0015F0DB /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		52FADB2A163E7F3F0015F0DB /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -81,6 +93,7 @@
 		52FADB47163E7F3F0015F0DB /* MasterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MasterViewController.m; sourceTree = "<group>"; };
 		52FADB49163E7F3F0015F0DB /* DetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
 		52FADB4A163E7F3F0015F0DB /* DetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		52FDD31D16413F550042CCDC /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +101,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52FDD31E16413F550042CCDC /* ImageIO.framework in Frameworks */,
+				52DC42491640068400B035B1 /* CoreVideo.framework in Frameworks */,
+				52DC4247163FD06500B035B1 /* CoreMedia.framework in Frameworks */,
+				52DC4244163FD05200B035B1 /* AVFoundation.framework in Frameworks */,
+				52260B97163EDFE0009ABEF9 /* MediaPlayer.framework in Frameworks */,
 				52260B7A163EB44C009ABEF9 /* libxml2.2.dylib in Frameworks */,
 				52260B4C163EA2F9009ABEF9 /* libRestKit.a in Frameworks */,
 				52260B4A163EA2F4009ABEF9 /* QuartzCore.framework in Frameworks */,
@@ -155,6 +173,11 @@
 		52FADB27163E7F3F0015F0DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				52FDD31D16413F550042CCDC /* ImageIO.framework */,
+				52DC42481640068300B035B1 /* CoreVideo.framework */,
+				52DC4246163FD06500B035B1 /* CoreMedia.framework */,
+				52DC4243163FD05200B035B1 /* AVFoundation.framework */,
+				52260B96163EDFE0009ABEF9 /* MediaPlayer.framework */,
 				52260B79163EB44C009ABEF9 /* libxml2.2.dylib */,
 				52260B4B163EA2F9009ABEF9 /* libRestKit.a */,
 				52260B49163EA2F4009ABEF9 /* QuartzCore.framework */,
@@ -214,6 +237,8 @@
 				52260B68163EA5CC009ABEF9 /* ContentProvider.m */,
 				52260B6A163EAE79009ABEF9 /* MappingProvider.h */,
 				52260B6B163EAE79009ABEF9 /* MappingProvider.m */,
+				52260BA0163EE9AD009ABEF9 /* GIFDownloader.h */,
+				52260BA1163EE9AD009ABEF9 /* GIFDownloader.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -354,6 +379,7 @@
 				52260B76163EB436009ABEF9 /* TFHppleElement.m in Sources */,
 				52260B77163EB436009ABEF9 /* XPathQuery.m in Sources */,
 				52260B7D163EB538009ABEF9 /* RKObjectLoader+Extended.m in Sources */,
+				52260BA2163EE9AD009ABEF9 /* GIFDownloader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -466,6 +492,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TheJoysOfCode/TheJoysOfCode-Prefix.pch";
 				INFOPLIST_FILE = "TheJoysOfCode/TheJoysOfCode-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -477,6 +504,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TheJoysOfCode/TheJoysOfCode-Prefix.pch";
 				INFOPLIST_FILE = "TheJoysOfCode/TheJoysOfCode-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

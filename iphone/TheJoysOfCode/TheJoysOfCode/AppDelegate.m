@@ -19,7 +19,7 @@
 #if DEBUG
     //See RestKit/Support/lcl_config_components.h
     RKLogConfigureByName("RestKit", RKLogLevelCritical);
-    RKLogConfigureByName("RestKit/Network", RKLogLevelTrace);
+    RKLogConfigureByName("RestKit/Network", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/Network/Queue", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/Network/Reachability", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/ObjectMapping", RKLogLevelCritical);
@@ -27,6 +27,8 @@
 #else
     RKLogConfigureByName("RestKit", RKLogLevelOff);
 #endif
+    
+    kGlobalObjectManager();
     
     // Override point for customization after application launch.
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -75,7 +77,6 @@
             RKManagedObjectMapping* postMapping = [RKManagedObjectMapping mappingForEntityWithName: @"Post"
                                                                               inManagedObjectStore: store];
             postMapping.primaryKeyAttribute = @"primaryKey";
-            postMapping.rootKeyPath = @"response.posts";
             [postMapping mapAttributes: @"title", @"picture", @"author", nil];
             [postMapping mapKeyPathsToAttributes:
              @"id", @"primaryKey",
@@ -83,13 +84,11 @@
              @"post_url", @"url",
              nil];
             
-            [provider setObjectMapping: postMapping
-                forResourcePathPattern: @"/posts"
-                 withFetchRequestBlock: ^NSFetchRequest *(NSString *resourcePath) {
-                     NSFetchRequest* fetchRequest = [Post fetchRequest];
-                     [fetchRequest setSortDescriptors: @[[NSSortDescriptor sortDescriptorWithKey: @"publishedDate" ascending: YES]]];
-                     return fetchRequest;
-                 }];
+            RKObjectMapping* paginationMapping = [RKObjectMapping mappingForClass: [RKObjectPaginator class]];
+            paginationMapping.rootKeyPath = @"response";
+            [paginationMapping mapKeyPathsToAttributes: @"total_posts", @"objectCount", nil];
+            
+            [provider setObjectMapping: postMapping forKeyPath: @"response.posts"];
             
         }];
     }

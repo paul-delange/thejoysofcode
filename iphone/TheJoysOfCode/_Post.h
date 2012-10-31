@@ -6,6 +6,7 @@
 
 extern const struct PostAttributes {
 	__unsafe_unretained NSString *author;
+	__unsafe_unretained NSString *hasDownloadedVideo;
 	__unsafe_unretained NSString *picture;
 	__unsafe_unretained NSString *primaryKey;
 	__unsafe_unretained NSString *publishedDate;
@@ -18,6 +19,7 @@ extern const struct PostRelationships {
 
 extern const struct PostFetchedProperties {
 } PostFetchedProperties;
+
 
 
 
@@ -43,6 +45,18 @@ extern const struct PostFetchedProperties {
 
 
 //- (BOOL)validateAuthor:(id*)value_ error:(NSError**)error_;
+
+
+
+
+@property (nonatomic, strong) NSNumber* hasDownloadedVideo;
+
+
+@property BOOL hasDownloadedVideoValue;
+- (BOOL)hasDownloadedVideoValue;
+- (void)setHasDownloadedVideoValue:(BOOL)value_;
+
+//- (BOOL)validateHasDownloadedVideo:(id*)value_ error:(NSError**)error_;
 
 
 
@@ -104,6 +118,15 @@ extern const struct PostFetchedProperties {
 
 - (NSString*)primitiveAuthor;
 - (void)setPrimitiveAuthor:(NSString*)value;
+
+
+
+
+- (NSNumber*)primitiveHasDownloadedVideo;
+- (void)setPrimitiveHasDownloadedVideo:(NSNumber*)value;
+
+- (BOOL)primitiveHasDownloadedVideoValue;
+- (void)setPrimitiveHasDownloadedVideoValue:(BOOL)value_;
 
 
 

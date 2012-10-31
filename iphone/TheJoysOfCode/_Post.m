@@ -5,6 +5,7 @@
 
 const struct PostAttributes PostAttributes = {
 	.author = @"author",
+	.hasDownloadedVideo = @"hasDownloadedVideo",
 	.picture = @"picture",
 	.primaryKey = @"primaryKey",
 	.publishedDate = @"publishedDate",
@@ -44,6 +45,10 @@ const struct PostFetchedProperties PostFetchedProperties = {
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
 	NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
 	
+	if ([key isEqualToString:@"hasDownloadedVideoValue"]) {
+		NSSet *affectingKey = [NSSet setWithObject:@"hasDownloadedVideo"];
+		keyPaths = [keyPaths setByAddingObjectsFromSet:affectingKey];
+	}
 	if ([key isEqualToString:@"primaryKeyValue"]) {
 		NSSet *affectingKey = [NSSet setWithObject:@"primaryKey"];
 		keyPaths = [keyPaths setByAddingObjectsFromSet:affectingKey];
@@ -57,6 +62,32 @@ const struct PostFetchedProperties PostFetchedProperties = {
 
 @dynamic author;
 
+
+
+
+
+
+@dynamic hasDownloadedVideo;
+
+
+
+- (BOOL)hasDownloadedVideoValue {
+	NSNumber *result = [self hasDownloadedVideo];
+	return [result boolValue];
+}
+
+- (void)setHasDownloadedVideoValue:(BOOL)value_ {
+	[self setHasDownloadedVideo:[NSNumber numberWithBool:value_]];
+}
+
+- (BOOL)primitiveHasDownloadedVideoValue {
+	NSNumber *result = [self primitiveHasDownloadedVideo];
+	return [result boolValue];
+}
+
+- (void)setPrimitiveHasDownloadedVideoValue:(BOOL)value_ {
+	[self setPrimitiveHasDownloadedVideo:[NSNumber numberWithBool:value_]];
+}
 
 
 

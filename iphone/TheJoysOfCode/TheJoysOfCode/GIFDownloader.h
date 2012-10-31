@@ -8,6 +8,20 @@
 
 #import <Foundation/Foundation.h>
 
+FOUNDATION_EXTERN NSString * const kGIF2MP4ConversionErrorDomain;
+typedef enum {
+    kGIF2MP4ConversionErrorInvalidGIFImage = 0,
+    kGIF2MP4ConversionErrorAlreadyProcessing
+} kGIF2MP4ConversionError;
+
+
+typedef void (^kGIF2MP4ConversionCompleted) (NSString* outputFilePath, NSError* error);
+
 @interface GIFDownloader : NSObject
+
++ (void) sendAsynchronousRequest: (NSString*) srcPath
+                downloadFilePath: (NSString*) filePath
+                       completed: (kGIF2MP4ConversionCompleted) handler;
+
 
 @end

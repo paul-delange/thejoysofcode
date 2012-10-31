@@ -8,8 +8,14 @@
 
 #import "DetailViewController.h"
 
+#import "Post.h"
+#import "GIFDownloader.h"
+
+#import <MediaPlayer/MediaPlayer.h>
+
 @interface DetailViewController ()
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
+
 - (void)configureView;
 @end
 
@@ -36,7 +42,22 @@
     // Update the user interface for the detail item.
 
     if (self.detailItem) {
-        self.detailDescriptionLabel.text = [self.detailItem description];
+        //self.detailDescriptionLabel.text = [self.detailItem description];
+        self.title = self.detailItem.title;
+        
+                                                   /*
+        AnimatedGifQueueObject *agqo = [[AnimatedGifQueueObject alloc] init];
+        [agqo setUiv: self.imageView];
+        [agqo setUrl: url];
+        [[AnimatedGif sharedInstance] addToQueue: agqo];
+
+        if ([[AnimatedGif sharedInstance] busyDecoding] != YES)
+        {
+            [[AnimatedGif sharedInstance] setBusyDecoding: YES];
+            
+            // Asynchronous loading for URL's, else the GUI won't appear until image is loaded.
+            [[AnimatedGif sharedInstance] performSelector:@selector(asynchronousLoading) withObject:nil afterDelay:0.0];
+        }*/
     }
 }
 
@@ -45,6 +66,14 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [self configureView];
+}
+
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear: animated];
+    
+    NSURL* url = [NSURL URLWithString: self.detailItem.picture];
+    MPMoviePlayerViewController* controller = [[MPMoviePlayerViewController alloc] initWithContentURL: url];
+    [self presentMoviePlayerViewControllerAnimated: controller];
 }
 
 - (void)didReceiveMemoryWarning
@@ -69,4 +98,8 @@
     self.masterPopoverController = nil;
 }
 
+- (void)viewDidUnload {
+    [self setImageView:nil];
+    [super viewDidUnload];
+}
 @end
