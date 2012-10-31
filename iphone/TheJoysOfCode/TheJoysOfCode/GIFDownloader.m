@@ -42,9 +42,6 @@ static __strong NSMutableArray* requests = nil;
 }
 
 + (void) addRequest: (NSURLRequest*) request {
-    NSLog(@"URL: %@", request.URL);
-    NSLog(@"Str: %@", request.URL.absoluteString);
-    
     [requests addObject: request.URL.absoluteString];
 }
 

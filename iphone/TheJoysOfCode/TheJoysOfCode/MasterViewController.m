@@ -85,12 +85,43 @@
                                                        [GIFDownloader sendAsynchronousRequest: post.picture
                                                                              downloadFilePath: post.pathToCachedVideo
                                                                                     completed: ^(NSString *outputFilePath, NSError *error) {
-                                                                                        NSLog(@"Saved: %@", outputFilePath);
+                                                                                        post.hasDownloadedVideo = @YES;
                                                                                     }];
                                                    }
+                                                   [kGlobalObjectManager().objectStore save: nil];
                                                };
                                                loader.onWillMapData = ^(id* mappableData) {
+                                                   NSMutableDictionary* response = [[*mappableData valueForKey: @"response"] mutableCopy];
+                                                   NSMutableArray* posts = [[response valueForKeyPath: @"posts"] mutableCopy];
+                                                   for(NSUInteger i = 0; i <posts.count;i++) {
+                                                       NSDictionary* post = [posts objectAtIndex: i];
+                                                       NSString* body = post[@"body"];
+                                                       TFHpple* doc = [[TFHpple alloc] initWithHTMLData: [body dataUsingEncoding: NSUTF8StringEncoding]];
+                                                       NSString* src = [[[doc searchWithXPathQuery: @"//img/@src"] lastObject] firstChild].content;
+                                                       NSString* author = [[[doc searchWithXPathQuery: @"//p/em"] lastObject] firstChild].content;
+                                                       
+                                                       NSLog(@"Src: %@", src);
+                                                       NSLog(@"Author: %@", author);
+                                                       
+                                                       NSAssert(src, @"%@ does not contain any images", body);
+                                                       //NSAssert(author, @"%@ does not contain an author", body);
+                                                       
+                                                       NSMutableDictionary* mutablePost = [post mutableCopy];
+                                                       mutablePost[@"picture"] = src;
+                                                       if( author )
+                                                           mutablePost[@"author"] = author;
+                                                       
+                                                       NSUInteger index = [posts indexOfObject: post];
+                                                       [posts replaceObjectAtIndex: index withObject: mutablePost];
+                                                   }
                                                    
+                                                   [response setObject: posts forKey: @"posts"];
+                                                   
+                                                   NSMutableDictionary* newData = [*mappableData mutableCopy];
+                                                   [newData setObject: response forKey: @"response"];
+                                                   *mappableData = newData;
+                                                   
+                                                   NSLog(@"Response: %@", *mappableData);
                                                };
                                            }];
 }
