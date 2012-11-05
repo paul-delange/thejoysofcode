@@ -6,20 +6,22 @@
 // Custom logic goes here.
 
 + (void) load {
-    [[NSNotificationCenter defaultCenter] addObserver: [self class]
-                                             selector: @selector(objectContextHasSaved:)
-                                                 name: NSManagedObjectContextDidSaveNotification
-                                               object: nil];
-    
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"Videos"];
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath])
-        [[NSFileManager defaultManager] createDirectoryAtPath:dataPath
-                                  withIntermediateDirectories: YES
-                                                   attributes: nil
-                                                        error: nil];
+    @autoreleasepool {
+        [[NSNotificationCenter defaultCenter] addObserver: [self class]
+                                                 selector: @selector(objectContextHasSaved:)
+                                                     name: NSManagedObjectContextDidSaveNotification
+                                                   object: nil];
+        
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"Videos"];
+        
+        if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath])
+            [[NSFileManager defaultManager] createDirectoryAtPath:dataPath
+                                      withIntermediateDirectories: YES
+                                                       attributes: nil
+                                                            error: nil];
+    }
 }
 
 + (void) objectContextHasSaved: (NSNotification*) notification {
@@ -47,9 +49,6 @@
     NSString *documentsDirectory = [paths objectAtIndex:0];
     NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"Videos"];
     
-   // NSAssert([[NSFileManager defaultManager] fileExistsAtPath: dataPath], @"%@ does not exist", dataPath);
-   // NSAssert(self.primaryKey, @"There must be a primary key to save correctly: %@", self);
-    
     if( self.primaryKey ) {
         NSString* fileName = [NSString stringWithFormat: @"%@.mp4", self.primaryKey];
         return [dataPath stringByAppendingPathComponent: fileName];
@@ -57,6 +56,20 @@
     else {
         return nil;
     }
+}
+
+- (void) willSave {
+    
+    NSDictionary* changed = [self changedValues];
+    if( [[changed objectForKey: @"picture"] length] ) {
+        [GIFDownloader sendAsynchronousRequest: self.picture
+                              downloadFilePath: self.pathToCachedVideo
+                                     completed: ^(NSString *outputFilePath, NSError *error) {
+                                         self.hasDownloadedVideo = @([[NSFileManager defaultManager] fileExistsAtPath: outputFilePath]);
+                                         [kGlobalObjectManager().objectStore save: nil];
+                                     }];
+    }
+    [super willSave];
 }
 
 @end

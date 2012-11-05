@@ -10,4 +10,6 @@
 
 @interface TumblrObjectPaginator : RKObjectPaginator
 
+@property (readonly, nonatomic) NSUInteger currentObject;
+
 @end
