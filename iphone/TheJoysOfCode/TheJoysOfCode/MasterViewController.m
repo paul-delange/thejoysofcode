@@ -12,6 +12,7 @@
 
 #import <RestKit/UI.h>
 #import "TFHpple.h"
+#import "TimeScroller.h"
 
 #import "GIFDownloader.h"
 #import "TumblrObjectPaginator.h"
@@ -21,9 +22,14 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate>
+@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate, TimeScrollerDelegate> {
+    BOOL loading;
+}
+
 @property (strong, nonatomic) NSFetchedResultsController* tableController;
 @property (strong, nonatomic) TumblrObjectPaginator* objectPaginator;
+@property (strong, nonatomic) TimeScroller* timeScroller;
+
 @end
 
 @implementation MasterViewController
@@ -67,7 +73,7 @@
     
     NSFetchRequest* request = [Post fetchRequest];
     [request setPredicate: [NSPredicate predicateWithFormat: @"hasDownloadedVideo = YES"]];
-    [request setSortDescriptors: @[[NSSortDescriptor sortDescriptorWithKey: @"publishedDate" ascending: YES]]];
+    [request setSortDescriptors: @[[NSSortDescriptor sortDescriptorWithKey: @"publishedDate" ascending: NO]]];
     
     NSFetchedResultsController* frc = [[NSFetchedResultsController alloc] initWithFetchRequest: request
                                                                           managedObjectContext: [NSManagedObjectContext contextForCurrentThread]
@@ -85,6 +91,8 @@
     self.objectPaginator.configurationDelegate = self;
     
     [self refreshPushed: self.navigationItem.rightBarButtonItem];
+    
+    self.timeScroller = [[TimeScroller alloc] initWithDelegate: self];
 }
 
 - (void)didReceiveMemoryWarning
@@ -95,13 +103,24 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    if ([[segue identifier] isEqualToString:@"showDetail"]) {
+    NSString* identifier = segue.identifier;
+    if ([identifier isEqualToString:@"showDetail"]) {
         NSIndexPath* indexPath = [self.tableView indexPathForCell: sender];
         Post* post = [self.tableController objectAtIndexPath: indexPath];
         
         NSAssert([[NSFileManager defaultManager] fileExistsAtPath: post.pathToCachedVideo], @"No video for this post: %@", post);
+        UIViewController* destination = segue.destinationViewController;
+        DetailViewController* detailVC = nil;
+        if( [destination isKindOfClass: [UINavigationController class]] ) {
+            detailVC = ((UINavigationController*)destination).viewControllers[0];
+        }
+        else if( [destination isKindOfClass: [DetailViewController class]] ) {
+            detailVC = (DetailViewController*)destination;
+        }
         
-        [[segue destinationViewController] setDetailItem: post];
+        NSAssert([detailVC isKindOfClass: [DetailViewController class]], @"DetailVC is not correct type. We had: %@", detailVC);
+        
+        [detailVC setDetailItem: post];
     }
 }
 
@@ -109,9 +128,22 @@
     return YES;
 }
 
+- (void) willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    
+    [super willRotateToInterfaceOrientation: toInterfaceOrientation duration: duration];
+}
+
 #pragma mark - Actions
 - (IBAction) refreshPushed:(id)sender {
-    [self.objectPaginator loadPage: 0];
+    if( loading ) {
+        if( [self respondsToSelector: @selector(refreshControl)] ) {
+            [self.refreshControl endRefreshing];
+        }
+    }
+    else {
+        loading = YES;
+        [self.objectPaginator loadPage: 0];  
+    }
 }
 
 - (IBAction) pushNotificationsTapped:(id)sender {
@@ -215,6 +247,34 @@
     return [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] ? 0 : 50.f;
 }
 
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 50.f;
+}
+
+#pragma mark - UITableViewDelegate
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    Post* post = [self.tableController objectAtIndexPath: indexPath];
+    
+    NSAssert([[NSFileManager defaultManager] fileExistsAtPath: post.pathToCachedVideo], @"No video for this post: %@", post);
+    
+    [self.detailViewController setDetailItem: post];
+    
+    /*
+    UIViewController* destination = segue.destinationViewController;
+    DetailViewController* detailVC = nil;
+    if( [destination isKindOfClass: [UINavigationController class]] ) {
+        detailVC = ((UINavigationController*)destination).viewControllers[0];
+    }
+    else if( [destination isKindOfClass: [DetailViewController class]] ) {
+        detailVC = (DetailViewController*)destination;
+    }
+    
+    NSAssert([detailVC isKindOfClass: [DetailViewController class]], @"DetailVC is not correct type. We had: %@", detailVC);
+    
+    [detailVC setDetailItem: post];
+     */
+}
+
 #pragma mark - RKConfigurationDelegate
 - (void)configureObjectLoader:(RKObjectLoader *)loader {
     loader.onWillMapData = ^(id* mappableData) {
@@ -249,11 +309,13 @@
 #pragma mark - RKObjectPaginatorDelegate
 - (void) paginator:(RKObjectPaginator *)paginator didLoadObjects:(NSArray *)objects forPage:(NSUInteger)page {
     if( paginator.hasNextPage ) {
-        NSLog(@"Loading page: %d", page+1);
         [paginator loadNextPage];
     }
     else {
-        NSLog(@"Finished loading all pages");
+        loading = NO;
+        if( [self respondsToSelector: @selector(refreshControl)]) {
+            [self.refreshControl endRefreshing];
+        }
     }
 }
 
@@ -261,4 +323,33 @@
     
 }
 
+#pragma mark - TimeScrollerDelegate
+- (UITableView*) tableViewForTimeScroller:(TimeScroller *)timeScroller {
+    return self.tableView;
+}
+
+- (NSDate*) dateForCell:(UITableViewCell *)cell {
+    NSIndexPath* indexPath = [self.tableView indexPathForCell: cell];
+    Post* post = [self.tableController objectAtIndexPath: indexPath];
+    return post.publishedDate;
+}
+
+#pragma mark - UIScrollViewDelegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    [self.timeScroller scrollViewDidScroll];
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    [self.timeScroller scrollViewDidEndDecelerating];
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    [self.timeScroller scrollViewWillBeginDragging];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    if (!decelerate) {
+        [self.timeScroller scrollViewDidEndDecelerating];
+    }
+}
 @end

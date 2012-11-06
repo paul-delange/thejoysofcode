@@ -152,6 +152,12 @@ static __strong NSMutableArray* requests = nil;
          return NO;
     }
     
+    if( sourceWidth > 640 || sourceWidth < 10)
+        sourceWidth = 640;
+    
+    if( sourceHeight > 480 || sourceHeight < 10 )
+        sourceHeight = 480;
+    
     NSAssert(sourceWidth <= 640, @"%lu is too wide for a video", sourceWidth);
     NSAssert(sourceHeight <= 480, @"%lu is too tall for a video", sourceHeight);
     
@@ -178,6 +184,14 @@ static __strong NSMutableArray* requests = nil;
                
             CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex(source, currentFrameNumber, NULL);
             CFDictionaryRef gifProperties = CFDictionaryGetValue(properties, kCGImagePropertyGIFDictionary);
+            
+            if( !gifProperties ) {
+                completionHandler(outFilePath.absoluteString, [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
+                                                                                  code: kGIF2MP4ConversionErrorInvalidGIFImage
+                                                                              userInfo: nil]);
+                return;
+            }
+            
             NSNumber* delayTime = CFDictionaryGetValue(gifProperties, kCGImagePropertyGIFDelayTime);
 
             totalFrameDelay += delayTime.floatValue;
@@ -188,11 +202,18 @@ static __strong NSMutableArray* requests = nil;
   
             CMTime time = CMTimeMakeWithSeconds(totalFrameDelay, FPS);
             
-            [adaptor appendPixelBuffer: pxBuffer withPresentationTime: time];
-            
-            CVPixelBufferRelease(pxBuffer);
-            CGImageRelease(imgRef);
-            
+            @try {
+                [adaptor appendPixelBuffer: pxBuffer withPresentationTime: time];
+            }
+            @catch (NSException *exception) {
+                completionHandler(outFilePath.absoluteString, [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain code: kGIF2MP4ConversionErrorBufferingFailed userInfo:nil]);
+                return;
+            }
+            @finally {
+                CVPixelBufferRelease(pxBuffer);
+                CGImageRelease(imgRef);
+            }
+
             currentFrameNumber++;
         }
         else {

@@ -4,3 +4,6 @@
 [submodule "iphone/hpple"]
 	path = iphone/hpple
 	url = https://github.com/topfunky/hpple.git
+[submodule "iphone/TimeScroller"]
+	path = iphone/TimeScroller
+	url = https://github.com/andrewroycarter/TimeScroller.git

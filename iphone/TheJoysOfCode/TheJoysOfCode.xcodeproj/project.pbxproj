@@ -34,6 +34,11 @@
 		525344C61647F6FA007C5221 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525344C51647F6FA007C5221 /* CoreLocation.framework */; };
 		525344C81647F704007C5221 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525344C71647F704007C5221 /* AudioToolbox.framework */; };
 		525344CA1647F70E007C5221 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525344C91647F70E007C5221 /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		52D030E816492AF200CF1C20 /* iAdNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52D030E716492AF100CF1C20 /* iAdNavigationController.m */; };
+		52D030FE16492DEA00CF1C20 /* iAd.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D030FD16492DEA00CF1C20 /* iAd.framework */; };
+		52D03107164937AA00CF1C20 /* TimeScroller.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 52D03104164937AA00CF1C20 /* TimeScroller.bundle */; };
+		52D03108164937AA00CF1C20 /* TimeScroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 52D03106164937AA00CF1C20 /* TimeScroller.m */; };
+		52D03156164947EA00CF1C20 /* iAdSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52D03155164947D700CF1C20 /* iAdSplitViewController.m */; };
 		52DC4244163FD05200B035B1 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52DC4243163FD05200B035B1 /* AVFoundation.framework */; };
 		52DC4247163FD06500B035B1 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52DC4246163FD06500B035B1 /* CoreMedia.framework */; };
 		52DC42491640068400B035B1 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52DC42481640068300B035B1 /* CoreVideo.framework */; };
@@ -88,6 +93,14 @@
 		525344C51647F6FA007C5221 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		525344C71647F704007C5221 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		525344C91647F70E007C5221 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		52D030E616492AF100CF1C20 /* iAdNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iAdNavigationController.h; sourceTree = "<group>"; };
+		52D030E716492AF100CF1C20 /* iAdNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iAdNavigationController.m; sourceTree = "<group>"; };
+		52D030FD16492DEA00CF1C20 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = System/Library/Frameworks/iAd.framework; sourceTree = SDKROOT; };
+		52D03104164937AA00CF1C20 /* TimeScroller.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = TimeScroller.bundle; path = ../TimeScroller/TimerScroller/TimeScroller.bundle; sourceTree = "<group>"; };
+		52D03105164937AA00CF1C20 /* TimeScroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TimeScroller.h; path = ../TimeScroller/TimerScroller/TimeScroller.h; sourceTree = "<group>"; };
+		52D03106164937AA00CF1C20 /* TimeScroller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TimeScroller.m; path = ../TimeScroller/TimerScroller/TimeScroller.m; sourceTree = "<group>"; };
+		52D03154164947CD00CF1C20 /* iAdSplitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iAdSplitViewController.h; sourceTree = "<group>"; };
+		52D03155164947D700CF1C20 /* iAdSplitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iAdSplitViewController.m; sourceTree = "<group>"; };
 		52DC4243163FD05200B035B1 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		52DC4246163FD06500B035B1 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		52DC42481640068300B035B1 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -120,6 +133,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52D030FE16492DEA00CF1C20 /* iAd.framework in Frameworks */,
 				525344CA1647F70E007C5221 /* AdSupport.framework in Frameworks */,
 				525344C81647F704007C5221 /* AudioToolbox.framework in Frameworks */,
 				525344C61647F6FA007C5221 /* CoreLocation.framework in Frameworks */,
@@ -153,6 +167,7 @@
 		52260B60163EA503009ABEF9 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				52D031031649379C00CF1C20 /* TimeScroller */,
 				52260B78163EB439009ABEF9 /* Hpple */,
 				52260B61163EA507009ABEF9 /* Mogenerator */,
 			);
@@ -175,6 +190,16 @@
 				52260B74163EB436009ABEF9 /* XPathQuery.m */,
 			);
 			name = Hpple;
+			sourceTree = "<group>";
+		};
+		52D031031649379C00CF1C20 /* TimeScroller */ = {
+			isa = PBXGroup;
+			children = (
+				52D03104164937AA00CF1C20 /* TimeScroller.bundle */,
+				52D03105164937AA00CF1C20 /* TimeScroller.h */,
+				52D03106164937AA00CF1C20 /* TimeScroller.m */,
+			);
+			name = TimeScroller;
 			sourceTree = "<group>";
 		};
 		52FADB19163E7F3E0015F0DB = {
@@ -200,6 +225,7 @@
 		52FADB27163E7F3F0015F0DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				52D030FD16492DEA00CF1C20 /* iAd.framework */,
 				525344C91647F70E007C5221 /* AdSupport.framework */,
 				525344C71647F704007C5221 /* AudioToolbox.framework */,
 				525344C51647F6FA007C5221 /* CoreLocation.framework */,
@@ -250,6 +276,10 @@
 				52FADB4A163E7F3F0015F0DB /* DetailViewController.m */,
 				52FADB37163E7F3F0015F0DB /* AppDelegate.h */,
 				52FADB38163E7F3F0015F0DB /* AppDelegate.m */,
+				52D030E616492AF100CF1C20 /* iAdNavigationController.h */,
+				52D030E716492AF100CF1C20 /* iAdNavigationController.m */,
+				52D03154164947CD00CF1C20 /* iAdSplitViewController.h */,
+				52D03155164947D700CF1C20 /* iAdSplitViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -377,6 +407,7 @@
 				52FADB3F163E7F3F0015F0DB /* Default-568h@2x.png in Resources */,
 				52FADB42163E7F3F0015F0DB /* MainStoryboard_iPhone.storyboard in Resources */,
 				52FADB45163E7F3F0015F0DB /* MainStoryboard_iPad.storyboard in Resources */,
+				52D03107164937AA00CF1C20 /* TimeScroller.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +449,9 @@
 				52260B7D163EB538009ABEF9 /* RKObjectLoader+Extended.m in Sources */,
 				52260BA2163EE9AD009ABEF9 /* GIFDownloader.m in Sources */,
 				DA638E971641A2AD0005E263 /* TumblrObjectPaginator.m in Sources */,
+				52D030E816492AF200CF1C20 /* iAdNavigationController.m in Sources */,
+				52D03108164937AA00CF1C20 /* TimeScroller.m in Sources */,
+				52D03156164947EA00CF1C20 /* iAdSplitViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

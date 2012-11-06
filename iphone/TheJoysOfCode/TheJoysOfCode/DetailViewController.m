@@ -12,13 +12,16 @@
 #import "GIFDownloader.h"
 
 #import <MediaPlayer/MediaPlayer.h>
+#import <Social/Social.h>
 
-@interface DetailViewController ()
+@interface DetailViewController () <UIPopoverControllerDelegate, UIActionSheetDelegate>
 
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
 @property (strong, nonatomic) MPMoviePlayerController* moviePlayer;
+@property (strong, nonatomic) UIPopoverController* sharePopoverController;
 
 - (void)configureView;
+
 @end
 
 @implementation DetailViewController
@@ -57,7 +60,8 @@
         _detailItem = newDetailItem;
         
         // Update the view.
-        [self configureView];
+        if( self.isViewLoaded )
+            [self configureView];
     }
     
     if (self.masterPopoverController != nil) {
@@ -65,10 +69,27 @@
     }
 }
 
+- (void) setMoviePlayer:(MPMoviePlayerController *)moviePlayer {
+    if( _moviePlayer ) {
+        [_moviePlayer stop];
+        [_moviePlayer.view removeFromSuperview];
+    }
+    
+    if( moviePlayer ) {
+        [moviePlayer prepareToPlay];
+        moviePlayer.repeatMode = MPMovieRepeatModeOne;
+        moviePlayer.allowsAirPlay = NO;
+        moviePlayer.shouldAutoplay = NO;
+        moviePlayer.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [self.view insertSubview: moviePlayer.view belowSubview: self.detailDescriptionLabel];
+    }
+    
+    _moviePlayer = moviePlayer;
+}
+
 - (void)configureView
 {
     // Update the user interface for the detail item.
-    
     if (self.detailItem) {
         self.title = @"";
         self.detailDescriptionLabel.text = self.detailItem.title;
@@ -77,14 +98,46 @@
         NSAssert(url, @"No video cached for: %@", self.detailItem);
         
         MPMoviePlayerController* mp = [[MPMoviePlayerController alloc] initWithContentURL: url];
-        [mp prepareToPlay];
-        mp.repeatMode = MPMovieRepeatModeOne;
-        mp.allowsAirPlay = NO;
-        mp.shouldAutoplay = NO;
-        mp.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        [self.view insertSubview: mp.view belowSubview: self.detailDescriptionLabel];
-        
         self.moviePlayer = mp;
+        
+        CGRect frame = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame));
+        self.moviePlayer.view.frame = frame;
+        
+        self.navigationItem.rightBarButtonItem.enabled = YES;
+        
+        [UIView animateWithDuration: 0.01
+                              delay: 0
+                            options: 0
+                         animations: ^{
+                             self.detailDescriptionLabel.alpha = 1.f;
+                         } completion: ^(BOOL finished) {
+                             NSInteger numberOfWords = [self.detailDescriptionLabel.text componentsSeparatedByString: @" "].count;
+                             
+                             NSTimeInterval delay = numberOfWords * 0.15;
+                             
+                             delay = MAX(0.5, delay);
+                             
+                             [UIView animateWithDuration: 0.3
+                                                   delay: delay
+                                                 options: UIViewAnimationOptionCurveEaseOut
+                                              animations: ^{
+                                                  self.detailDescriptionLabel.alpha = 0.f;
+                                                  
+                                              } completion: ^(BOOL finished) {
+                                                  self.title = self.detailItem.title;
+                                                  
+                                                  NSAssert(self.moviePlayer.loadState & (MPMovieLoadStatePlayable | MPMovieLoadStatePlaythroughOK), @"The movie player was in a bad load state: %d", self.moviePlayer.loadState);
+                                                  NSAssert(self.moviePlayer.playbackState == MPMoviePlaybackStateStopped, @"Movie will not start at the beginning");
+                                                  NSAssert(self.moviePlayer.isPreparedToPlay, @"Movie player was not prepared");
+                                                  
+                                                  [self.moviePlayer play];
+                                              }];
+                         }];
+    }
+    else {
+        self.navigationItem.rightBarButtonItem.enabled = NO;
+        self.detailDescriptionLabel.text = NSLocalizedString(@"Choose a video from the list...", @"");
+        self.title = NSLocalizedString(@"The Joys of Code", @"");
     }
 }
 
@@ -93,43 +146,21 @@
     [super viewDidLoad];
     
 	// Do any additional setup after loading the view, typically from a nib.
+    
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAction
+                                                                                           target: self
+                                                                                           action: @selector(sharePushed:)];
+    
+    
     [self configureView];
 }
 
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear: animated];
     
-    CGRect frame = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame));
-    self.moviePlayer.view.frame = frame;
-    
-    [UIView animateWithDuration: 0.01
-                          delay: 0
-                        options: 0
-                     animations: ^{
-                         self.detailDescriptionLabel.alpha = 1.f;
-                     } completion: ^(BOOL finished) {
-                         NSInteger numberOfWords = [self.detailDescriptionLabel.text componentsSeparatedByString: @" "].count;
-                         
-                         NSTimeInterval delay = numberOfWords * 0.1;
-                         
-                         delay = MAX(0.5, delay);
-                         
-                         [UIView animateWithDuration: 0.3
-                                               delay: delay
-                                             options: UIViewAnimationOptionCurveEaseOut
-                                          animations: ^{
-                                              self.detailDescriptionLabel.alpha = 0.f;
-                                              
-                                          } completion: ^(BOOL finished) {
-                                              self.title = self.detailItem.title;
-                                              
-                                              NSAssert(self.moviePlayer.loadState & (MPMovieLoadStatePlayable | MPMovieLoadStatePlaythroughOK), @"The movie player was in a bad load state: %d", self.moviePlayer.loadState);
-                                              NSAssert(self.moviePlayer.playbackState == MPMoviePlaybackStateStopped, @"Movie will not start at the beginning");
-                                              NSAssert(self.moviePlayer.isPreparedToPlay, @"Movie player was not prepared");
-                                              
-                                              [self.moviePlayer play];
-                                          }];
-                     }];
+    if( self.detailItem ) {
+        
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -150,7 +181,7 @@
 
 - (void)splitViewController:(UISplitViewController *)splitController willHideViewController:(UIViewController *)viewController withBarButtonItem:(UIBarButtonItem *)barButtonItem forPopoverController:(UIPopoverController *)popoverController
 {
-    barButtonItem.title = NSLocalizedString(@"Master", @"Master");
+    barButtonItem.title = NSLocalizedString(@"Videos", @"");
     [self.navigationItem setLeftBarButtonItem:barButtonItem animated:YES];
     self.masterPopoverController = popoverController;
 }
@@ -162,7 +193,60 @@
     self.masterPopoverController = nil;
 }
 
-- (void)viewDidUnload {
-    [super viewDidUnload];
+#pragma mark - Actions
+- (void) sharePushed: (id) sender {
+    if( NSClassFromString(@"UIActivityViewController") ) {
+        if( self.sharePopoverController )
+            return;
+        
+        NSArray* activities = nil;
+        NSArray* items = @[self.detailItem.url];
+        NSArray* exclude = @[UIActivityTypePostToWeibo, UIActivityTypeAssignToContact, UIActivityTypePrint, UIActivityTypeSaveToCameraRoll];
+        
+        UIActivityViewController* vc = [[UIActivityViewController alloc] initWithActivityItems: items
+                                                                         applicationActivities: activities];
+        vc.excludedActivityTypes = exclude;
+        vc.completionHandler = ^(NSString* activityType, BOOL completed) {
+            self.sharePopoverController = nil;
+        };
+        
+        self.sharePopoverController = [[UIPopoverController alloc] initWithContentViewController: vc];
+        self.sharePopoverController.delegate = self;
+        [self.sharePopoverController presentPopoverFromBarButtonItem: sender
+                                            permittedArrowDirections: UIPopoverArrowDirectionUp
+                                                            animated: YES];
+    }
+    else {
+        UIActionSheet* actionSheet = [[UIActionSheet alloc] initWithTitle: NSLocalizedString(@"Select social channel", @"")
+                                                                 delegate: self
+                                                        cancelButtonTitle: NSLocalizedString(@"Cancel", @"")
+                                                   destructiveButtonTitle: nil
+                                                        otherButtonTitles: @"Twitter", @"Mail", nil];
+        [actionSheet showFromBarButtonItem: sender animated: YES];
+    }
 }
+
+#pragma mark - UIPopoverControllerDelegate
+- (void) popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
+    self.sharePopoverController = nil;
+}
+
+#pragma mark - UIActionSheetDelegate
+- (void) actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if( buttonIndex != actionSheet.cancelButtonIndex ) {
+        switch (buttonIndex) {
+            case 0:
+            {
+                break;
+            }
+            case 1:
+            {
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
 @end
