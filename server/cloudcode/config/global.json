@@ -1,0 +1,14 @@
+{
+    "applications": {
+        "The Joys Of Code": {
+            "applicationId": "54hNrGRnJzXeUH344iTLQY6GQp1Rv5OD7ZYknS3f", 
+            "masterKey": "fq4dnkyiOabMxxKJquBSnfeStWRBZNv8eeHDpHM2"
+        }, 
+        "_default": {
+            "link": "The Joys Of Code"
+        }
+    }, 
+    "global": {
+        "parseVersion": "1.1.8"
+    }
+}

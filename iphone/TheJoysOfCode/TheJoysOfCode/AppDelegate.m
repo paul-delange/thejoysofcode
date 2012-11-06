@@ -12,6 +12,8 @@
 
 #import "Post.h"
 
+#import <Parse/Parse.h>
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -29,6 +31,10 @@
 #endif
     
     kGlobalObjectManager();
+    
+    [Parse setApplicationId: @"54hNrGRnJzXeUH344iTLQY6GQp1Rv5OD7ZYknS3f" clientKey: @"6Z1DPP9R7QN7CHX4LQEQnDnmOU9rCmr9QzF0v1ZZ"];
+    
+    [application registerForRemoteNotificationTypes: UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound];
     
     // Override point for customization after application launch.
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -64,6 +70,22 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (void) application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    [PFPush storeDeviceToken: deviceToken];
+    [PFPush subscribeToChannelInBackground: @"" block: ^(BOOL succeeded, NSError *error) {
+        if( succeeded ) {
+            NSLog(@"Subscribed to broadcast channel");
+        }
+        else {
+            
+        }
+    }];
+}
+
+- (void) application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    [PFPush handlePush: userInfo];
 }
 
 - (RKObjectManager*) objectManager {

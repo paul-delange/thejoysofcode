@@ -1,6 +1,9 @@
 #import "Post.h"
 #import "GIFDownloader.h"
 
+#import <Parse/Parse.h>
+#import <RestKit/RestKit.h>
+
 @implementation Post
 
 // Custom logic goes here.
@@ -40,7 +43,32 @@
             }
         }
     }
+    
+    //id value = [self lastPostDate];
+    PFInstallation* pushInstallation = [PFInstallation currentInstallation];
+    [pushInstallation setObject: [self numberOfEntities] forKey: @"postCount"];
+    [pushInstallation saveInBackground];
 }
+/*
++ (NSDate*) lastPostDate {
+    NSFetchRequest* request = [self fetchRequest];
+    [request setResultType: NSDictionaryResultType];
+    
+    NSExpression* keyPathExpression = [NSExpression expressionForKeyPath: @"publishedDate"];
+    NSExpression* maxExpression = [NSExpression expressionForFunction: @"max:" arguments: @[keyPathExpression]];
+    NSExpressionDescription* expressionDescription = [NSExpressionDescription new];
+    [expressionDescription setName: @"maxDate"];
+    [expressionDescription setExpression: maxExpression];
+    [expressionDescription setExpressionResultType: NSDateAttributeType];
+    
+    [request setPropertiesToFetch: @[expressionDescription]];
+    
+    NSArray* objs = [self executeFetchRequest: request];
+    if( objs.count ) {
+        return [objs[0] valueForKeyPath: @"maxDate"];
+    }
+    return nil;
+}*/
 
 - (NSString*) pathToCachedVideo {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);

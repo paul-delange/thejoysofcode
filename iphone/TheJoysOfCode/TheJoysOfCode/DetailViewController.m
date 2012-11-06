@@ -70,10 +70,6 @@
 
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear: animated];
-    
-    NSURL* url = [NSURL URLWithString: self.detailItem.picture];
-    MPMoviePlayerViewController* controller = [[MPMoviePlayerViewController alloc] initWithContentURL: url];
-    [self presentMoviePlayerViewControllerAnimated: controller];
 }
 
 - (void)didReceiveMemoryWarning
