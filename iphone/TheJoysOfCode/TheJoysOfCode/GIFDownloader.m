@@ -22,7 +22,7 @@ NSString * const kGIF2MP4ConversionErrorDomain = @"GIF2MP4ConversionError";
     static NSOperationQueue* requestQueue = nil;
     if( !requestQueue ) {
         requestQueue = [NSOperationQueue new];
-        requestQueue.maxConcurrentOperationCount = 2;
+        requestQueue.maxConcurrentOperationCount = 1;
         
     }
     return requestQueue;
@@ -66,7 +66,10 @@ static __strong NSMutableArray* requests = nil;
     
     kGIF2MP4ConversionCompleted completionHandler = ^(NSString* path, NSError* error) {
         [self removeRequest: request];
-        handler(path, error);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            handler(path, error);
+        });
     };
     
     [self addRequest: request];
@@ -91,9 +94,33 @@ static __strong NSMutableArray* requests = nil;
         }
     };
     
-    [NSURLConnection sendAsynchronousRequest: request
-                                       queue: [self requestQueue]
-                           completionHandler: requestCompleted];
+    [[self requestQueue] addOperationWithBlock: ^{
+
+        NSURLResponse* response = nil;
+        NSError* error = nil;
+        NSData* data = [NSURLConnection sendSynchronousRequest: request
+                                             returningResponse: &response
+                                                         error: &error];
+        
+        if( error ) {
+            handler(filePath, error);
+        }
+        else {
+            if( [[NSFileManager defaultManager] fileExistsAtPath: filePath] ) {
+                [[NSFileManager defaultManager] removeItemAtPath: filePath
+                                                           error: &error];
+                if( error ) {
+                    handler(filePath, error);
+                }
+            }
+            
+            NSURL* outFilePath = [NSURL fileURLWithPath: filePath];
+            
+            [self processGIFData: data toFilePath: outFilePath completed: completionHandler];
+            
+        }
+
+    }];
 }
 
 + (BOOL) processGIFData: (NSData*) data
@@ -125,6 +152,9 @@ static __strong NSMutableArray* requests = nil;
          return NO;
     }
     
+    NSAssert(sourceWidth <= 640, @"%lu is too wide for a video", sourceWidth);
+    NSAssert(sourceHeight <= 480, @"%lu is too tall for a video", sourceHeight);
+    
     NSDictionary *videoSettings = @{
                     AVVideoCodecKey : AVVideoCodecH264,
                     AVVideoWidthKey : @(sourceWidth),
@@ -145,7 +175,7 @@ static __strong NSMutableArray* requests = nil;
     void (^videoWriterReadyForData)(void) = ^{
         if( currentFrameNumber < sourceFrameCount ) {
             CGImageRef imgRef = CGImageSourceCreateImageAtIndex(source, currentFrameNumber, NULL);
-            
+               
             CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex(source, currentFrameNumber, NULL);
             CFDictionaryRef gifProperties = CFDictionaryGetValue(properties, kCGImagePropertyGIFDictionary);
             NSNumber* delayTime = CFDictionaryGetValue(gifProperties, kCGImagePropertyGIFDelayTime);

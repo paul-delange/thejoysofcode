@@ -18,6 +18,9 @@
 
 #import "Post.h"
 
+#import <QuartzCore/QuartzCore.h>
+#import <AVFoundation/AVFoundation.h>
+
 @interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate>
 @property (strong, nonatomic) NSFetchedResultsController* tableController;
 @property (strong, nonatomic) TumblrObjectPaginator* objectPaginator;
@@ -42,11 +45,25 @@
 
     self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
 
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh
-                                                                                           target: self
-                                                                                           action: @selector(refreshPushed:)];
+    if( [self respondsToSelector: @selector(refreshControl)]) {
+        UIRefreshControl* refreshControl = [UIRefreshControl new];
+        [refreshControl addTarget: self
+                           action: @selector(refreshPushed:)
+                 forControlEvents: UIControlEventValueChanged];
+        self.refreshControl = refreshControl;
+    }
+    else {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh
+                                                                                               target: self
+                                                                                               action: @selector(refreshPushed:)];
+    }
     
-    self.title = NSLocalizedString(@"Les joies du code", @"");
+    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"Back", @"")
+                                                                             style: UIBarButtonItemStylePlain
+                                                                            target: self.navigationController
+                                                                            action: @selector(popViewControllerAnimated:)];
+    
+    self.title = NSLocalizedString(@"The Joys of Code", @"");
     
     NSFetchRequest* request = [Post fetchRequest];
     [request setPredicate: [NSPredicate predicateWithFormat: @"hasDownloadedVideo = YES"]];
@@ -62,7 +79,7 @@
     NSAssert(!error, @"Error: %@", error);
     self.tableController = frc;
     
-    NSURL* patternURL = [kGlobalObjectManager().client.baseURL URLByAppendingResourcePath: @"/posts?api_key=2oiq2RJVxKq2Pk2jaHoyLvOwiknYNKiuBwaZIXljQhSyMHsmMb&limit=:perPage&offset=:currentObject"];
+    RKURL* patternURL = [kGlobalObjectManager().client.baseURL URLByAppendingResourcePath: @"/posts?api_key=2oiq2RJVxKq2Pk2jaHoyLvOwiknYNKiuBwaZIXljQhSyMHsmMb&limit=:perPage&offset=:currentObject"];
     self.objectPaginator = [[TumblrObjectPaginator alloc] initWithPatternURL: patternURL mappingProvider: kGlobalObjectManager().mappingProvider];
     self.objectPaginator.delegate = self;
     self.objectPaginator.configurationDelegate = self;
@@ -79,13 +96,30 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
-        [[segue destinationViewController] setDetailItem:sender];
+        NSIndexPath* indexPath = [self.tableView indexPathForCell: sender];
+        Post* post = [self.tableController objectAtIndexPath: indexPath];
+        
+        NSAssert([[NSFileManager defaultManager] fileExistsAtPath: post.pathToCachedVideo], @"No video for this post: %@", post);
+        
+        [[segue destinationViewController] setDetailItem: post];
     }
+}
+
+- (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
+    return YES;
 }
 
 #pragma mark - Actions
 - (IBAction) refreshPushed:(id)sender {
     [self.objectPaginator loadPage: 0];
+}
+
+- (IBAction) pushNotificationsTapped:(id)sender {
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes: UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert];
+    
+    [[NSUserDefaults standardUserDefaults] setBool: YES forKey: kUserPreferenceHasUsedPushNotifications];
+    
+    [self.tableView reloadSections: [NSIndexSet indexSetWithIndex: 0] withRowAnimation: UITableViewRowAnimationAutomatic];
 }
 
 #pragma mark - NSFetchedResultsController
@@ -138,7 +172,47 @@
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier: @"PostCell"];
     Post* post = [self.tableController objectAtIndexPath: indexPath];
     
+    cell.imageView.image = post.thumbnail;
+    cell.textLabel.text = post.title;
+    cell.detailTextLabel.text = post.author;
+    
     return cell;
+}
+
+- (UIView*) tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if( [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] ) {
+        return nil;
+    }
+    else {
+        UIView* headerView = [[UIView alloc] initWithFrame: CGRectMake(0, 0, CGRectGetWidth(tableView.frame), [self tableView: tableView heightForHeaderInSection: section])];
+        headerView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        
+        UILabel* pushText = [[UILabel alloc] initWithFrame: headerView.frame];
+        pushText.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        pushText.numberOfLines = 2;
+        pushText.textAlignment = UITextAlignmentCenter;
+        pushText.textColor = [UIColor whiteColor];
+        pushText.font = [UIFont fontWithName: @"Chalkduster" size: 12];
+        pushText.text = NSLocalizedString(@"Tap here to enable Push Notifications to let you know when new videos are added!", @"");
+        pushText.backgroundColor = [UIColor clearColor];
+        [headerView addSubview: pushText];
+        
+        CAGradientLayer* gradient = [CAGradientLayer layer];
+        gradient.frame = headerView.frame;
+        gradient.colors = @[(id)[UIColor blackColor].CGColor, (id)[UIColor blackColor].CGColor, (id)[UIColor colorWithWhite: 0.0 alpha: 0.01].CGColor];
+        gradient.locations = @[@(0), @(0.7), @(1.0)];
+        [headerView.layer insertSublayer: gradient atIndex: 0];
+        
+        UITapGestureRecognizer* recognizer = [[UITapGestureRecognizer alloc] initWithTarget: self
+                                                                                     action: @selector(pushNotificationsTapped:)];
+        [headerView addGestureRecognizer: recognizer];
+        
+        return headerView;
+    }
+}
+
+- (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] ? 0 : 50.f;
 }
 
 #pragma mark - RKConfigurationDelegate
@@ -174,7 +248,13 @@
 
 #pragma mark - RKObjectPaginatorDelegate
 - (void) paginator:(RKObjectPaginator *)paginator didLoadObjects:(NSArray *)objects forPage:(NSUInteger)page {
-    
+    if( paginator.hasNextPage ) {
+        NSLog(@"Loading page: %d", page+1);
+        [paginator loadNextPage];
+    }
+    else {
+        NSLog(@"Finished loading all pages");
+    }
 }
 
 - (void) paginator:(RKObjectPaginator *)paginator didFailWithError:(NSError *)error objectLoader:(RKObjectLoader *)loader {

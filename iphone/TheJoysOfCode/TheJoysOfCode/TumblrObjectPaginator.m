@@ -17,6 +17,14 @@
 
 @implementation TumblrObjectPaginator
 
+- (id)initWithPatternURL:(RKURL *)aPatternURL mappingProvider:(RKObjectMappingProvider *)aMappingProvider {
+    self = [super initWithPatternURL: aPatternURL mappingProvider: aMappingProvider];
+    if( self ) {
+        self.objectStore = kGlobalObjectManager().objectStore;
+    }
+    return self;
+}
+
 - (NSUInteger) currentObject {
     return MIN(self.perPage * self.currentPage, self.objectCount);
 }
@@ -37,7 +45,7 @@
         NSDictionary* queryParams = [loader.URL queryParameters];
         currentPage = self.perPage * [queryParams[@"offset"] integerValue];
         pageCount = ceilf(objectCountFloat / self.perPage);
-        RKLogInfo(@"Paginator objectCount: %ld pageCount: %ld", (long)self.objectCount, (long)self.pageCount);
+        //RKLogInfo(@"Paginator objectCount: %ld pageCount: %ld", (long)self.objectCount, (long)self.pageCount);
     } else {
         NSAssert(NO, @"Paginator perPage set is 0.");
         RKLogError(@"Paginator perPage set is 0.");
@@ -53,6 +61,10 @@
 
 - (NSUInteger) pageCount {
     return ceil(self.objectCount / self.perPage);
+}
+
+- (BOOL) hasPageCount {
+    return self.pageCount != NSUIntegerMax;
 }
 
 @end

@@ -8,6 +8,8 @@
 
 #import "ContentProvider.h"
 
+#import <Parse/Parse.h>
+
 #define kContentLanguageKey    @"content.language.key"
 
 @implementation ContentProvider

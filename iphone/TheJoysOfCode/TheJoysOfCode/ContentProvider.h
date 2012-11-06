@@ -11,5 +11,6 @@
 @interface ContentProvider : NSObject
 
 + (NSString*) baseURL;
++ (NSString*) contentLanguage;
 
 @end

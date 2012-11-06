@@ -11,8 +11,11 @@
 #import "MappingProvider.h"
 
 #import "Post.h"
+#import "GIFDownloader.h"
 
 #import <Parse/Parse.h>
+
+NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotifications";
 
 @implementation AppDelegate
 
@@ -34,7 +37,12 @@
     
     [Parse setApplicationId: @"54hNrGRnJzXeUH344iTLQY6GQp1Rv5OD7ZYknS3f" clientKey: @"6Z1DPP9R7QN7CHX4LQEQnDnmOU9rCmr9QzF0v1ZZ"];
     
-    [application registerForRemoteNotificationTypes: UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound];
+    PFInstallation* pushInstallation = [PFInstallation currentInstallation];
+    [pushInstallation setObject: [ContentProvider contentLanguage] forKey: @"language"];
+    [pushInstallation saveInBackground];
+    
+    if( [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] )
+        [application registerForRemoteNotificationTypes: UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert];
     
     // Override point for customization after application launch.
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -115,6 +123,18 @@
             
             provider.paginationMapping = paginationMapping;
             
+            NSArray* withoutVideo = [Post findAllWithPredicate: [NSPredicate predicateWithFormat: @"hasDownloadedVideo == NO"]];
+            for(Post* post in withoutVideo) {
+                [GIFDownloader sendAsynchronousRequest: post.picture
+                                      downloadFilePath: post.pathToCachedVideo
+                                             completed: ^(NSString *outputFilePath, NSError *error) {
+                                                 Post* post2 = [Post findFirstByAttribute: @"primaryKey" withValue: post.primaryKey];
+                                                 if( !error ) {
+                                                     post2.hasDownloadedVideoValue = YES;
+                                                     [kGlobalObjectManager().objectStore save: nil];
+                                                 }
+                                             }];
+            }
         }];
     }
     

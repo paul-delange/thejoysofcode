@@ -16,4 +16,6 @@
 
     FOUNDATION_EXTERN RKObjectManager* kGlobalObjectManager(void);
 
+    FOUNDATION_EXTERN NSString * const kUserPreferenceHasUsedPushNotifications;
+
 #endif

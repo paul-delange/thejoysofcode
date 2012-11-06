@@ -3,5 +3,6 @@
 @interface Post : _Post {}
 // Custom logic goes here.
 - (NSString*) pathToCachedVideo;
+- (UIImage*) thumbnail;
 
 @end
