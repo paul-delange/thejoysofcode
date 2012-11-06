@@ -12,9 +12,11 @@
 #import "GIFDownloader.h"
 
 #import <MediaPlayer/MediaPlayer.h>
+#import <Twitter/Twitter.h>
+#import <MessageUI/MessageUI.h>
 #import <Social/Social.h>
 
-@interface DetailViewController () <UIPopoverControllerDelegate, UIActionSheetDelegate>
+@interface DetailViewController () <UIPopoverControllerDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
 
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
 @property (strong, nonatomic) MPMoviePlayerController* moviePlayer;
@@ -236,17 +238,60 @@
     if( buttonIndex != actionSheet.cancelButtonIndex ) {
         switch (buttonIndex) {
             case 0:
-            {
+            {   //Twitter
+                if( [TWTweetComposeViewController canSendTweet]) {
+                    TWTweetComposeViewController* vc = [TWTweetComposeViewController new];
+                    [vc addURL: [NSURL URLWithString: self.detailItem.url]];
+                    [vc setInitialText: self.detailItem.title];
+                    vc.completionHandler = ^(TWTweetComposeViewControllerResult result) {
+                        [self dismissViewControllerAnimated: YES completion: ^{
+                            
+                        }];
+                    };
+                    [self presentModalViewController: vc animated: YES];
+                }
+                else {
+                    UIAlertView* alert = [[UIAlertView alloc] initWithTitle: NSLocalizedString(@"Configure Twitter", @"")
+                                                                    message: NSLocalizedString(@"Please configure a Twitter account in your device settings", @"")
+                                                                   delegate: nil
+                                                          cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                                          otherButtonTitles: nil];
+                    [alert show];
+                }
                 break;
             }
             case 1:
             {
+                //Mail
+                if( [MFMailComposeViewController canSendMail]) {
+                    MFMailComposeViewController* vc = [MFMailComposeViewController new];
+                    [vc setSubject: NSLocalizedString(@"The Joys of Code", @"")];
+                    NSString* body = [NSString stringWithFormat: @"<a href=%@>%@</a>", self.detailItem.url, self.detailItem.title];
+                    [vc setMessageBody: body isHTML: YES];
+                    vc.mailComposeDelegate = self;
+                    [self presentModalViewController: vc animated: YES];
+                }
+                else {
+                    UIAlertView* alert = [[UIAlertView alloc] initWithTitle: NSLocalizedString(@"Configure Mail", @"")
+                                                                    message: NSLocalizedString(@"Please configure a Mail account in your device settings", @"")
+                                                                   delegate: nil
+                                                          cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                                          otherButtonTitles: nil];
+                    [alert show];
+                }
                 break;
             }
             default:
                 break;
         }
     }
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+- (void) mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error {
+    [self dismissViewControllerAnimated: YES completion: ^{
+        
+    }];
 }
 
 @end

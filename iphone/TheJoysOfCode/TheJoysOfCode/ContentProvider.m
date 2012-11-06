@@ -14,7 +14,7 @@
 
 @implementation ContentProvider
 
-static const char* availableProviders[] = {"fr"};
+static const char* availableProviders[] = {"fr", "en"};
 
 + (void) load {
     @autoreleasepool {
@@ -22,7 +22,7 @@ static const char* availableProviders[] = {"fr"};
         
         if( previousLanguage==nil ) {
             NSArray* preferredLanguages = [NSLocale preferredLanguages];
-            NSString* userLanguage = [preferredLanguages objectAtIndex: 0] ? : @"fr";
+            NSString* userLanguage = [preferredLanguages objectAtIndex: 0] ? : @"en";
             
             if( [self providerExistsForIdentifier: userLanguage] ) {
                 [self setContentLanguage: userLanguage];

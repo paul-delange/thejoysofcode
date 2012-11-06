@@ -41,6 +41,8 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
     [pushInstallation setObject: [ContentProvider contentLanguage] forKey: @"language"];
     [pushInstallation saveInBackground];
     
+    application.applicationIconBadgeNumber = 0;
+    
     if( [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] )
         [application registerForRemoteNotificationTypes: UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert];
     
@@ -93,6 +95,7 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
 }
 
 - (void) application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    application.applicationIconBadgeNumber = 0;
     [PFPush handlePush: userInfo];
 }
 

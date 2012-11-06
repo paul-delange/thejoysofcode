@@ -150,8 +150,8 @@
                                              [kGlobalObjectManager().objectStore save: nil];
                                          }
                                          
-                                         BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath: outputFilePath];
-                                         NSLog(@"File %@", exists?@"exists":@"doesn't exist");
+                                         //BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath: outputFilePath];
+                                         //NSLog(@"File %@", exists?@"exists":@"doesn't exist");
                                      }];
 
     }

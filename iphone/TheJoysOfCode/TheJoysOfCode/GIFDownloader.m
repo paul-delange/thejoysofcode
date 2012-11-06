@@ -74,26 +74,6 @@ static __strong NSMutableArray* requests = nil;
     
     [self addRequest: request];
     
-    void(^requestCompleted)(NSURLResponse*, NSData*, NSError*) = ^(NSURLResponse* response, NSData* data, NSError* error) {
-        if( error ) {
-            handler(filePath, error);
-        }
-        else {
-            if( [[NSFileManager defaultManager] fileExistsAtPath: filePath] ) {
-                [[NSFileManager defaultManager] removeItemAtPath: filePath
-                                                           error: &error];
-                if( error ) {
-                    handler(filePath, error);
-                }
-            }
-
-            NSURL* outFilePath = [NSURL fileURLWithPath: filePath];
-  
-            [self processGIFData: data toFilePath: outFilePath completed: completionHandler];
-        
-        }
-    };
-    
     [[self requestQueue] addOperationWithBlock: ^{
 
         NSURLResponse* response = nil;
