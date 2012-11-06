@@ -14,11 +14,13 @@
 #import "TFHpple.h"
 
 #import "GIFDownloader.h"
+#import "TumblrObjectPaginator.h"
+
 #import "Post.h"
 
-@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate>
+@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate>
 @property (strong, nonatomic) NSFetchedResultsController* tableController;
-@property (strong, nonatomic) RKObjectPaginator* objectPaginator;
+@property (strong, nonatomic) TumblrObjectPaginator* objectPaginator;
 @end
 
 @implementation MasterViewController
@@ -60,6 +62,11 @@
     NSAssert(!error, @"Error: %@", error);
     self.tableController = frc;
     
+    NSURL* patternURL = [kGlobalObjectManager().client.baseURL URLByAppendingResourcePath: @"/posts?api_key=2oiq2RJVxKq2Pk2jaHoyLvOwiknYNKiuBwaZIXljQhSyMHsmMb&limit=:perPage&offset=:currentObject"];
+    self.objectPaginator = [[TumblrObjectPaginator alloc] initWithPatternURL: patternURL mappingProvider: kGlobalObjectManager().mappingProvider];
+    self.objectPaginator.delegate = self;
+    self.objectPaginator.configurationDelegate = self;
+    
     [self refreshPushed: self.navigationItem.rightBarButtonItem];
 }
 
@@ -78,52 +85,7 @@
 
 #pragma mark - Actions
 - (IBAction) refreshPushed:(id)sender {
-    [kGlobalObjectManager() loadObjectsAtResourcePath: @"/posts?api_key=2oiq2RJVxKq2Pk2jaHoyLvOwiknYNKiuBwaZIXljQhSyMHsmMb"
-                                           usingBlock: ^(RKObjectLoader *loader) {
-                                               loader.onDidLoadObjects = ^(NSArray* objects) {
-                                                   for(Post* post in objects) {
-                                                       [GIFDownloader sendAsynchronousRequest: post.picture
-                                                                             downloadFilePath: post.pathToCachedVideo
-                                                                                    completed: ^(NSString *outputFilePath, NSError *error) {
-                                                                                        post.hasDownloadedVideo = @YES;
-                                                                                    }];
-                                                   }
-                                                   [kGlobalObjectManager().objectStore save: nil];
-                                               };
-                                               loader.onWillMapData = ^(id* mappableData) {
-                                                   NSMutableDictionary* response = [[*mappableData valueForKey: @"response"] mutableCopy];
-                                                   NSMutableArray* posts = [[response valueForKeyPath: @"posts"] mutableCopy];
-                                                   for(NSUInteger i = 0; i <posts.count;i++) {
-                                                       NSDictionary* post = [posts objectAtIndex: i];
-                                                       NSString* body = post[@"body"];
-                                                       TFHpple* doc = [[TFHpple alloc] initWithHTMLData: [body dataUsingEncoding: NSUTF8StringEncoding]];
-                                                       NSString* src = [[[doc searchWithXPathQuery: @"//img/@src"] lastObject] firstChild].content;
-                                                       NSString* author = [[[doc searchWithXPathQuery: @"//p/em"] lastObject] firstChild].content;
-                                                       
-                                                       NSLog(@"Src: %@", src);
-                                                       NSLog(@"Author: %@", author);
-                                                       
-                                                       NSAssert(src, @"%@ does not contain any images", body);
-                                                       //NSAssert(author, @"%@ does not contain an author", body);
-                                                       
-                                                       NSMutableDictionary* mutablePost = [post mutableCopy];
-                                                       mutablePost[@"picture"] = src;
-                                                       if( author )
-                                                           mutablePost[@"author"] = author;
-                                                       
-                                                       NSUInteger index = [posts indexOfObject: post];
-                                                       [posts replaceObjectAtIndex: index withObject: mutablePost];
-                                                   }
-                                                   
-                                                   [response setObject: posts forKey: @"posts"];
-                                                   
-                                                   NSMutableDictionary* newData = [*mappableData mutableCopy];
-                                                   [newData setObject: response forKey: @"response"];
-                                                   *mappableData = newData;
-                                                   
-                                                   NSLog(@"Response: %@", *mappableData);
-                                               };
-                                           }];
+    [self.objectPaginator loadPage: 0];
 }
 
 #pragma mark - NSFetchedResultsController
@@ -164,7 +126,7 @@
 
 #pragma mark - UITableViewDataSource
 - (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView {
-    return  self.tableController.sections.count;
+    return self.tableController.sections.count;
 }
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -177,6 +139,46 @@
     Post* post = [self.tableController objectAtIndexPath: indexPath];
     
     return cell;
+}
+
+#pragma mark - RKConfigurationDelegate
+- (void)configureObjectLoader:(RKObjectLoader *)loader {
+    loader.onWillMapData = ^(id* mappableData) {
+        NSMutableDictionary* response = [[*mappableData valueForKey: @"response"] mutableCopy];
+        NSMutableArray* posts = [[response valueForKeyPath: @"posts"] mutableCopy];
+        for(NSUInteger i = 0; i <posts.count;i++) {
+            NSDictionary* post = [posts objectAtIndex: i];
+            NSString* body = post[@"body"];
+            TFHpple* doc = [[TFHpple alloc] initWithHTMLData: [body dataUsingEncoding: NSUTF8StringEncoding]];
+            NSString* src = [[[doc searchWithXPathQuery: @"//img/@src"] lastObject] firstChild].content;
+            NSString* author = [[[doc searchWithXPathQuery: @"//p/em"] lastObject] firstChild].content;
+            
+            NSAssert(src, @"%@ does not contain any images", body);
+            
+            NSMutableDictionary* mutablePost = [post mutableCopy];
+            mutablePost[@"picture"] = src;
+            if( author )
+                mutablePost[@"author"] = author;
+            
+            NSUInteger index = [posts indexOfObject: post];
+            [posts replaceObjectAtIndex: index withObject: mutablePost];
+        }
+        
+        [response setObject: posts forKey: @"posts"];
+        
+        NSMutableDictionary* newData = [*mappableData mutableCopy];
+        [newData setObject: response forKey: @"response"];
+        *mappableData = newData;
+    };
+}
+
+#pragma mark - RKObjectPaginatorDelegate
+- (void) paginator:(RKObjectPaginator *)paginator didLoadObjects:(NSArray *)objects forPage:(NSUInteger)page {
+    
+}
+
+- (void) paginator:(RKObjectPaginator *)paginator didFailWithError:(NSError *)error objectLoader:(RKObjectLoader *)loader {
+    
 }
 
 @end

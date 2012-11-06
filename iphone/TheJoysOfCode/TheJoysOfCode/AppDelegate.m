@@ -107,10 +107,13 @@
              nil];
             
             RKObjectMapping* paginationMapping = [RKObjectMapping mappingForClass: [RKObjectPaginator class]];
-            paginationMapping.rootKeyPath = @"response";
-            [paginationMapping mapKeyPathsToAttributes: @"total_posts", @"objectCount", nil];
+            [paginationMapping mapKeyPathsToAttributes:
+             @"response.total_posts", @"objectCount",
+             nil];
             
             [provider setObjectMapping: postMapping forKeyPath: @"response.posts"];
+            
+            provider.paginationMapping = paginationMapping;
             
         }];
     }
