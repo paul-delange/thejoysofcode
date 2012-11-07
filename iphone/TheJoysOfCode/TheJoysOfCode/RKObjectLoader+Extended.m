@@ -9,11 +9,8 @@
 #import "RKObjectLoader+Extended.h"
 
 #import <objc/runtime.h>
-#import <RestKit/RKObjectMapperError.h>
 
 NSString* kOnWillMapDataKey = @"onWillMapData";
-
-static NSString * const kHTTPCacheControl = @"Cache-Control";
 
 @implementation RKObjectLoader (Extended)
 
@@ -34,6 +31,12 @@ static NSString * const kHTTPCacheControl = @"Cache-Control";
                                                       error: error];
     if (parsedData == nil && error) {
         return nil;
+    }
+    
+    // Allow the delegate to manipulate the data
+    if ([self.delegate respondsToSelector:@selector(objectLoader:willMapData:)]) {
+        parsedData = [parsedData mutableCopy];
+        [(NSObject<RKObjectLoaderDelegate>*)self.delegate objectLoader:self willMapData:&parsedData];
     }
     
     if( self.onWillMapData ) {

@@ -47,7 +47,8 @@ static __strong NSMutableArray* requests = nil;
 
 + (void) sendAsynchronousRequest: (NSString*) srcURLPath
                 downloadFilePath: (NSString*) filePath
-                       completed: (kGIF2MP4ConversionCompleted) handler {
+               thumbnailFilePath: (NSString *)thumbFilePath
+                       completed: (kGIF2MP4ConversionCompleted)handler {
     
     if( !srcURLPath )
         return;
@@ -108,7 +109,7 @@ static __strong NSMutableArray* requests = nil;
                 
             };
             
-            [self processGIFData: data toFilePath: outFilePath completed: completionHandler];
+            [self processGIFData: data toFilePath: outFilePath thumbFilePath: thumbFilePath completed: completionHandler];
         }
 #if DEBUG
         NSLog(@"Finish writing: %@", filePath.lastPathComponent);
@@ -118,6 +119,7 @@ static __strong NSMutableArray* requests = nil;
 
 + (BOOL) processGIFData: (NSData*) data
              toFilePath: (NSURL*) outFilePath
+          thumbFilePath: (NSString*) thumbFilePath
               completed: (kGIF2MP4ConversionCompleted) completionHandler {
     
     CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
@@ -165,6 +167,18 @@ static __strong NSMutableArray* requests = nil;
         return NO;
     }
     
+    size_t totalFrameCount = CGImageSourceGetCount(source);
+    size_t thumbnailFrameCount = floorf( totalFrameCount * 0.05 );
+    
+    if( totalFrameCount <= 0 ) {
+        CFRelease(source);
+        error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
+                                    code: kGIF2MP4ConversionErrorInvalidGIFImage
+                                userInfo: nil];
+        completionHandler(outFilePath.absoluteString, error);
+        return NO;
+    }
+    
     NSAssert(sourceWidth <= 640, @"%lu is too wide for a video", sourceWidth);
     NSAssert(sourceHeight <= 480, @"%lu is too tall for a video", sourceHeight);
     
@@ -200,14 +214,24 @@ static __strong NSMutableArray* requests = nil;
         NSError* error = nil;
         
         while ([videoWriterInput isReadyForMoreMediaData] ) {
-            
-            //NSLog(@"Drawing frame %lu for: %@", currentFrameNumber, outFilePath.absoluteString.lastPathComponent);
-            
+#if DEBUG
+            //NSLog(@"Drawing frame %lu/%lu", currentFrameNumber, totalFrameCount);
+#endif
             NSDictionary* options = @{(NSString*)kCGImageSourceTypeIdentifierHint : (id)kUTTypeGIF};
             CGImageRef imgRef = CGImageSourceCreateImageAtIndex(source, currentFrameNumber, (__bridge CFDictionaryRef)options);
             if( imgRef ) {
                 CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex(source, currentFrameNumber, NULL);
                 CFDictionaryRef gifProperties = CFDictionaryGetValue(properties, kCGImagePropertyGIFDictionary);
+                
+                if( thumbnailFrameCount == currentFrameNumber ) {
+                    if( [[NSFileManager defaultManager] fileExistsAtPath: thumbFilePath] ) {
+                        [[NSFileManager defaultManager] removeItemAtPath: thumbFilePath error: nil];
+                    }
+                    
+                    UIImage* img = [UIImage imageWithCGImage: imgRef];
+                    [UIImagePNGRepresentation(img) writeToFile: thumbFilePath atomically: YES];
+                    
+                }
                 
                 if( gifProperties ) {
                     NSNumber* delayTime = CFDictionaryGetValue(gifProperties, kCGImagePropertyGIFDelayTime);
@@ -290,13 +314,14 @@ static __strong NSMutableArray* requests = nil;
     [videoWriterInput requestMediaDataWhenReadyOnQueue: dispatch_get_current_queue()
                                             usingBlock: videoWriterReadyForData];
     
-    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 60 * NSEC_PER_SEC);
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 120 * NSEC_PER_SEC);
     if( dispatch_semaphore_wait(sema, timeout) ) {
         //Timed out
         error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
                                     code: kGIF2MP4ConversionErrorTimedOut
                                 userInfo: nil];
         CFRelease(source);
+        [videoWriterInput markAsFinished];
         completionHandler(outFilePath.absoluteString, error);
     }
     

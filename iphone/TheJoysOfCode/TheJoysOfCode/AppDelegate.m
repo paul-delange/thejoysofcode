@@ -26,7 +26,7 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
 #if DEBUG
     //See RestKit/Support/lcl_config_components.h
     RKLogConfigureByName("RestKit", RKLogLevelCritical);
-    RKLogConfigureByName("RestKit/Network", RKLogLevelTrace);
+    RKLogConfigureByName("RestKit/Network", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/Network/Queue", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/Network/Reachability", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/ObjectMapping", RKLogLevelCritical);
@@ -41,13 +41,7 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
     
     PFInstallation* pushInstallation = [PFInstallation currentInstallation];
     [pushInstallation setObject: [ContentProvider contentLanguage] forKey: @"language"];
-    [pushInstallation saveInBackgroundWithBlock: ^(BOOL succeeded, NSError *error) {
-        /*[[NSNotificationCenter defaultCenter] addObserver: [Post class]
-                                                 selector: @selector(objectContextHasSaved:)
-                                                     name: NSManagedObjectContextDidSaveNotification
-                                                   object: nil];
-         */
-    }];
+    [pushInstallation saveEventually];
     
     application.applicationIconBadgeNumber = 0;
     
@@ -146,6 +140,7 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
             for(Post* post in withoutVideo) {
                 [GIFDownloader sendAsynchronousRequest: post.picture
                                       downloadFilePath: post.pathToCachedVideo
+                                     thumbnailFilePath: post.pathToThumbnail
                                              completed: ^(NSString *outputFilePath, NSError *error) {
                                                  Post* post2 = [Post findFirstByAttribute: @"primaryKey" withValue: post.primaryKey];
                                                  if( !error ) {

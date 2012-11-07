@@ -17,10 +17,15 @@
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths objectAtIndex:0];
         NSString *videoPath = [documentsDirectory stringByAppendingPathComponent:@"Videos"];
-        //NSString* thumbPath = [documentsDirectory stringByAppendingPathComponent: @"Thumbs"];
+        NSString* thumbPath = [documentsDirectory stringByAppendingPathComponent: @"Thumbs"];
         
         if (![[NSFileManager defaultManager] fileExistsAtPath:videoPath])
             [[NSFileManager defaultManager] createDirectoryAtPath:videoPath
+                                      withIntermediateDirectories: YES
+                                                       attributes: nil
+                                                            error: nil];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:thumbPath])
+            [[NSFileManager defaultManager] createDirectoryAtPath:thumbPath
                                       withIntermediateDirectories: YES
                                                        attributes: nil
                                                             error: nil];
@@ -97,7 +102,22 @@
     }
 }
 
+- (NSString*) pathToThumbnail {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"Thumbs"];
+    
+    if( self.primaryKey ) {
+        NSString* fileName = [NSString stringWithFormat: @"%@.png", self.primaryKey];
+        return [dataPath stringByAppendingPathComponent: fileName];
+    }
+    else {
+        return nil;
+    }
+}
+
 - (UIImage*) thumbnail {
+    /*
     NSURL* url = [NSURL fileURLWithPath: self.pathToCachedVideo];
     
     NSAssert(url, @"Could not create a url for: %@", self.pathToCachedVideo);
@@ -110,6 +130,8 @@
     UIImage* uiImg = [UIImage imageWithCGImage: cgImg];
     CGImageRelease(cgImg);
     return uiImg;
+     */
+    return [UIImage imageWithContentsOfFile: self.pathToThumbnail];
 }
 
 - (void) willSave {
@@ -117,6 +139,7 @@
     if( [[changed objectForKey: @"picture"] length] && self.primaryKeyValue) {
         [GIFDownloader sendAsynchronousRequest: self.picture
                               downloadFilePath: self.pathToCachedVideo
+                             thumbnailFilePath: self.pathToThumbnail
                                      completed: ^(NSString *outputFilePath, NSError *error) {
                                          Post* post = [Post findFirstByAttribute: @"primaryKey" withValue: self.primaryKey];
                                          if( !error ) {

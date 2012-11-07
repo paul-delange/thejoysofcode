@@ -24,6 +24,7 @@ typedef void (^kGIF2MP4ConversionCompleted) (NSString* outputFilePath, NSError* 
 
 + (void) sendAsynchronousRequest: (NSString*) srcPath
                 downloadFilePath: (NSString*) filePath
+               thumbnailFilePath: (NSString*) thumbFilePath
                        completed: (kGIF2MP4ConversionCompleted) handler;
 
 

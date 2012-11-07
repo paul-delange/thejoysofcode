@@ -39,13 +39,10 @@
     if (!success) {
         pageCount = currentPage = 0;
         RKLogError(@"Paginator didn't map info to compute page count. Assuming no pages.");
-    } else if (self.perPage && [self hasObjectCount]) {
-        float objectCountFloat = self.objectCount;
-        
+    } else {
         NSDictionary* queryParams = [loader.URL queryParameters];
         currentPage = self.perPage * [queryParams[@"offset"] integerValue];
-        pageCount = ceilf(objectCountFloat / self.perPage);
-        //RKLogInfo(@"Paginator objectCount: %ld pageCount: %ld", (long)self.objectCount, (long)self.pageCount);
+        self.perPage = [queryParams[@"limit"] integerValue];
     } 
 }
 
