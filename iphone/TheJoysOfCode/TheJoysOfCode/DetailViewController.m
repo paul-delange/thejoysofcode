@@ -74,8 +74,18 @@
         _detailItem = newDetailItem;
         
         // Update the view.
-        if( self.isViewLoaded )
+        if( self.isViewLoaded ) {
+            [UIView animateWithDuration: 0.3
+                                  delay: 0
+                                options: UIViewAnimationCurveEaseOut
+                             animations: ^{
+                                 self.ideaView.center = CGPointMake(CGRectGetWidth(self.view.frame) + CGRectGetWidth(self.ideaView.frame)/2.f,
+                                                                    CGRectGetMidY(self.view.frame));
+                             } completion: ^(BOOL finished) {
+                             }];
+            ideaViewShowing = NO;
             [self configureView];
+        }
     }
     
     if (self.masterPopoverController != nil) {
@@ -130,7 +140,7 @@
                          } completion: ^(BOOL finished) {
                              NSInteger numberOfWords = [self.detailDescriptionLabel.text componentsSeparatedByString: @" "].count;
                              
-                             NSTimeInterval delay = numberOfWords * 0.15;
+                             NSTimeInterval delay = numberOfWords * 0.3;
                              
                              delay = MAX(0.5, delay);
                              
@@ -156,18 +166,6 @@
         self.navigationItem.rightBarButtonItem.enabled = NO;
         self.detailDescriptionLabel.text = NSLocalizedString(@"Choose a video from the list...", @"");
         self.title = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? NSLocalizedString(@"When...", @"") : NSLocalizedString(@"The Joys of Code", @"");
-    }
-    
-    if( ideaViewShowing ) {
-        [UIView animateWithDuration: 0.3
-                              delay: 0
-                            options: UIViewAnimationCurveEaseOut
-                         animations: ^{
-                             self.ideaView.center = CGPointMake(CGRectGetWidth(self.view.frame) + CGRectGetWidth(self.ideaView.frame)/2.f,
-                                                                CGRectGetMidY(self.view.frame));
-                         } completion: ^(BOOL finished) {
-                             ideaViewShowing = NO;
-                         }];
     }
 }
 

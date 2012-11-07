@@ -10,12 +10,6 @@
 
 typedef void(^RKObjectLoaderWillMapDataBlock)(id* mappableData);
 
-@protocol RKObjectLoaderDelegate <RKObjectLoaderDelegate>
-@optional
-- (BOOL) objectLoaderHasCacheDeleteRights:(RKObjectLoader *)objectLoader;
-
-@end
-
 @interface RKObjectLoader (Extended)
 
 @property (nonatomic, copy) RKObjectLoaderWillMapDataBlock onWillMapData;

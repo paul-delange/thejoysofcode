@@ -42,6 +42,12 @@
         self.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
     }
     
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(reachabilityChanged:)
+                                                 name: RKReachabilityWasDeterminedNotification
+                                               object: nil];
+    
+    
     [super awakeFromNib];
 }
 
@@ -90,8 +96,6 @@
     self.objectPaginator = [[TumblrObjectPaginator alloc] initWithPatternURL: patternURL mappingProvider: kGlobalObjectManager().mappingProvider];
     self.objectPaginator.delegate = self;
     self.objectPaginator.configurationDelegate = self;
-    
-    [self refreshPushed: self.navigationItem.rightBarButtonItem];
     
     self.timeScroller = [[TimeScroller alloc] initWithDelegate: self];
 }
@@ -160,6 +164,18 @@
 
 #pragma mark - Actions
 - (IBAction) refreshPushed:(id)sender {
+    if( !kGlobalObjectManager().client.isNetworkReachable ) {
+        NSString* title = NSLocalizedString(@"The Joys of Code", @"");
+        NSString* msg = NSLocalizedString(@"No Internet connection. Please connect and try again", @"");
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle: title
+                                                        message: msg
+                                                       delegate: nil
+                                              cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                              otherButtonTitles: nil];
+        [alert show];
+        return;
+    }
+    
     if( loading ) {
         if( [self respondsToSelector: @selector(refreshControl)] ) {
             [self.refreshControl endRefreshing];
@@ -175,8 +191,16 @@
     [[UIApplication sharedApplication] registerForRemoteNotificationTypes: UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert];
     
     [[NSUserDefaults standardUserDefaults] setBool: YES forKey: kUserPreferenceHasUsedPushNotifications];
+    [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self.tableView reloadSections: [NSIndexSet indexSetWithIndex: 0] withRowAnimation: UITableViewRowAnimationAutomatic];
+}
+
+- (void) reachabilityChanged: (NSNotification*) notification {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self refreshPushed: nil];
+    });
 }
 
 #pragma mark - NSFetchedResultsController

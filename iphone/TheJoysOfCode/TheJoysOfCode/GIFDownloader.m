@@ -49,6 +49,15 @@ static __strong NSMutableArray* requests = nil;
                 downloadFilePath: (NSString*) filePath
                        completed: (kGIF2MP4ConversionCompleted) handler {
     
+    if( !srcURLPath )
+        return;
+    
+    if( !filePath )
+        return;
+    
+    if( !handler )
+        return;
+    
     NSParameterAssert(srcURLPath);
     NSParameterAssert(filePath);
     NSParameterAssert(handler);
@@ -67,14 +76,14 @@ static __strong NSMutableArray* requests = nil;
     [self addRequest: request];
     
     [[self requestQueue] addOperationWithBlock: ^{
-
+        
 #if DEBUG
         NSLog(@"Start writing: %@", filePath.lastPathComponent);
 #endif
-        NSURLResponse* response = nil;
+        //NSURLResponse* response = nil;
         NSError* error = nil;
         NSData* data = [NSURLConnection sendSynchronousRequest: request
-                                             returningResponse: &response
+                                             returningResponse: NULL
                                                          error: &error];
         
         if( error ) {
@@ -90,7 +99,7 @@ static __strong NSMutableArray* requests = nil;
             }
             
             NSURL* outFilePath = [NSURL fileURLWithPath: filePath];
- 
+            
             kGIF2MP4ConversionCompleted completionHandler = ^(NSString* path, NSError* error) {
                 [self removeRequest: request];
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -98,7 +107,7 @@ static __strong NSMutableArray* requests = nil;
                 });
                 
             };
- 
+            
             [self processGIFData: data toFilePath: outFilePath completed: completionHandler];
         }
 #if DEBUG
@@ -135,7 +144,7 @@ static __strong NSMutableArray* requests = nil;
     if( error ) {
         CFRelease(source);
         completionHandler(outFilePath.absoluteString, error);
-         return NO;
+        return NO;
     }
     
     if( sourceWidth > 640 || sourceWidth == 0) {
@@ -160,9 +169,9 @@ static __strong NSMutableArray* requests = nil;
     NSAssert(sourceHeight <= 480, @"%lu is too tall for a video", sourceHeight);
     
     NSDictionary *videoSettings = @{
-                    AVVideoCodecKey : AVVideoCodecH264,
-                    AVVideoWidthKey : @(sourceWidth),
-                    AVVideoHeightKey : @(sourceHeight)
+    AVVideoCodecKey : AVVideoCodecH264,
+    AVVideoWidthKey : @(sourceWidth),
+    AVVideoHeightKey : @(sourceHeight)
     };
     
     AVAssetWriterInput* videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType: AVMediaTypeVideo
@@ -210,16 +219,32 @@ static __strong NSMutableArray* requests = nil;
                     
                     CMTime time = CMTimeMakeWithSeconds(totalFrameDelay, FPS);
                     
-                    if( ![adaptor appendPixelBuffer: pxBuffer withPresentationTime: time] ) {
-                        //Could not write to buffers
-                        [videoWriterInput markAsFinished];
-                        error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
-                                                    code: kGIF2MP4ConversionErrorBufferingFailed
-                                                userInfo: nil];
+                    if( pxBuffer ) {
+                        if( !videoWriterInput.isReadyForMoreMediaData ) {
+                            CVBufferRelease(pxBuffer);
+                            CFRelease(properties);
+                            CGImageRelease(imgRef);
+                            break;
+                        }
+                        if( ![adaptor appendPixelBuffer: pxBuffer withPresentationTime: time] ) {
+                            //Could not write to buffers
+                            [videoWriterInput markAsFinished];
+                            error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
+                                                        code: kGIF2MP4ConversionErrorBufferingFailed
+                                                    userInfo: nil];
+                            CVBufferRelease(pxBuffer);
+                            CFRelease(properties);
+                            CGImageRelease(imgRef);
+                            break;
+                        }
+                        
+                        CVBufferRelease(pxBuffer);
+                    }
+                    else {
+                        CFRelease(properties);
+                        CGImageRelease(imgRef);
                         break;
                     }
-                    
-                    CVBufferRelease(pxBuffer);
                 }
                 else {
                     //Did not have a GIF image
@@ -227,6 +252,8 @@ static __strong NSMutableArray* requests = nil;
                     error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
                                                 code: kGIF2MP4ConversionErrorInvalidGIFImage
                                             userInfo: nil];
+                    if( properties ) CFRelease(properties);
+                    CGImageRelease(imgRef);
                     break;
                 }
                 
@@ -259,7 +286,7 @@ static __strong NSMutableArray* requests = nil;
             currentFrameNumber++;
         }
     };
-     
+    
     [videoWriterInput requestMediaDataWhenReadyOnQueue: dispatch_get_current_queue()
                                             usingBlock: videoWriterReadyForData];
     
@@ -304,7 +331,7 @@ static __strong NSMutableArray* requests = nil;
     
     size_t bytesPerRow = CVPixelBufferGetBytesPerRow(pxBuffer);
     
-
+    
     CGContextRef context = CGBitmapContextCreate(pxData,
                                                  width,
                                                  height,

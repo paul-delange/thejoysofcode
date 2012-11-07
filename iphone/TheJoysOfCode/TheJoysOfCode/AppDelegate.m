@@ -26,7 +26,7 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
 #if DEBUG
     //See RestKit/Support/lcl_config_components.h
     RKLogConfigureByName("RestKit", RKLogLevelCritical);
-    RKLogConfigureByName("RestKit/Network", RKLogLevelCritical);
+    RKLogConfigureByName("RestKit/Network", RKLogLevelTrace);
     RKLogConfigureByName("RestKit/Network/Queue", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/Network/Reachability", RKLogLevelCritical);
     RKLogConfigureByName("RestKit/ObjectMapping", RKLogLevelCritical);

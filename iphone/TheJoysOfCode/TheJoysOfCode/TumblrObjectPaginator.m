@@ -46,10 +46,7 @@
         currentPage = self.perPage * [queryParams[@"offset"] integerValue];
         pageCount = ceilf(objectCountFloat / self.perPage);
         //RKLogInfo(@"Paginator objectCount: %ld pageCount: %ld", (long)self.objectCount, (long)self.pageCount);
-    } else {
-        NSAssert(NO, @"Paginator perPage set is 0.");
-        RKLogError(@"Paginator perPage set is 0.");
-    }
+    } 
 }
 
 - (BOOL) hasNextPage {
