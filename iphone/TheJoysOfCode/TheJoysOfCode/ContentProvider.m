@@ -81,4 +81,18 @@ static const char* availableProviders[] = {"fr", "en"};
     return @"";
 }
 
++ (NSString*) feedbackEmail {
+    NSString* lang = [[NSUserDefaults standardUserDefaults] stringForKey: kContentLanguageKey];
+    NSAssert(lang, @"There was no language set in your content provider");
+    
+    if( [lang isEqualToString: @"fr"] ) {
+        return @"lesjoiesducode@gmail.com";
+    }
+    else if( [lang isEqualToString: @"en"] ) {
+        return @"thejoysofcode@gmail.com";
+    }
+    
+    return @"";
+}
+
 @end

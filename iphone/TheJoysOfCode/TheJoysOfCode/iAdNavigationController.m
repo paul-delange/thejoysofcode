@@ -10,7 +10,9 @@
 
 #import <iAd/iAd.h>
 
-@interface iAdNavigationController () <ADBannerViewDelegate>
+@interface iAdNavigationController () <ADBannerViewDelegate> {
+    BOOL hasAdvertisement;
+}
 
 @property (weak, nonatomic) UIView* contentView;
 @property (weak, nonatomic) ADBannerView* adView;
@@ -36,9 +38,6 @@
     
     ADBannerView* banner = [[ADBannerView alloc] initWithFrame: CGRectZero];
     banner.requiredContentSizeIdentifiers = [NSSet setWithObjects: ADBannerContentSizeIdentifierLandscape, ADBannerContentSizeIdentifierPortrait, nil];
-    banner.currentContentSizeIdentifier = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation) ? ADBannerContentSizeIdentifierLandscape : ADBannerContentSizeIdentifierPortrait;
-    
-    
     banner.delegate = self;
     banner.center = CGPointMake(CGRectGetMidX(self.view.frame), CGRectGetHeight(self.view.frame) + CGRectGetMidY(banner.frame));
     [self.view addSubview: banner];
@@ -47,21 +46,25 @@
     self.adView = banner;
 }
 
-- (void) willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+- (void) viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
     
-    self.adView.currentContentSizeIdentifier = UIInterfaceOrientationIsLandscape(toInterfaceOrientation) ? ADBannerContentSizeIdentifierLandscape : ADBannerContentSizeIdentifierPortrait;
-    [super willRotateToInterfaceOrientation: toInterfaceOrientation duration: duration];
+    NSString* required = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation) ? ADBannerContentSizeIdentifierLandscape : ADBannerContentSizeIdentifierPortrait;
     
-    [self updateAdvertisement: NO animated: NO];
+    if( ![self.adView.currentContentSizeIdentifier isEqualToString: required] ) {
+        self.adView.currentContentSizeIdentifier = required;
+    }
+    
+    [self updateAdvertisement: YES];
 }
 
-- (void) updateAdvertisement: (BOOL) available animated: (BOOL) animated {
+- (void) updateAdvertisement: (BOOL) animated {
     CGSize adSize = self.adView.frame.size;
     
     const float contentWidth = self.view.bounds.size.width;
     float contentHeight = 0.f;
     
-    if( available ) {
+    if( hasAdvertisement ) {
         contentHeight = self.view.bounds.size.height-adSize.height;
     }
     else {
@@ -82,13 +85,11 @@
         
         self.contentView.frame = contentFrame;
         self.adView.frame = adFrame;
-        
-        NSLog(@"AdFrame: %@", NSStringFromCGRect(self.adView.frame));
     };
     
     void (^finishBlock)(BOOL) = ^(BOOL finished) {
     };
-    
+
     if( animated ) {
         const NSTimeInterval duration = animated ? [UIApplication sharedApplication].statusBarOrientationAnimationDuration : 0.f;
         
@@ -106,13 +107,13 @@
 
 #pragma mark - ADBannerViewDelegate
 - (void) bannerViewDidLoadAd:(ADBannerView *)banner {
-    NSLog(@"Received iAd");
-    [self updateAdvertisement: YES animated: YES];
+    hasAdvertisement = YES;
+    [self updateAdvertisement: YES];
 }
 
 - (void) bannerView:(ADBannerView *)banner didFailToReceiveAdWithError:(NSError *)error {
-    NSLog(@"Failed to download iAD: %@", error);
-    [self updateAdvertisement: NO animated: YES];
+    hasAdvertisement = NO;
+    [self updateAdvertisement: YES];
 }
 
 @end

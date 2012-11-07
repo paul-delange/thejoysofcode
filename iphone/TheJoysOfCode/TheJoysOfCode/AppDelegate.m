@@ -39,7 +39,13 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
     
     PFInstallation* pushInstallation = [PFInstallation currentInstallation];
     [pushInstallation setObject: [ContentProvider contentLanguage] forKey: @"language"];
-    [pushInstallation saveInBackground];
+    [pushInstallation saveInBackgroundWithBlock: ^(BOOL succeeded, NSError *error) {
+        /*[[NSNotificationCenter defaultCenter] addObserver: [Post class]
+                                                 selector: @selector(objectContextHasSaved:)
+                                                     name: NSManagedObjectContextDidSaveNotification
+                                                   object: nil];
+         */
+    }];
     
     application.applicationIconBadgeNumber = 0;
     
@@ -59,6 +65,10 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+    
+    PFInstallation* pushInstallation = [PFInstallation currentInstallation];
+    [pushInstallation setObject: [Post numberOfEntities] forKey: @"postCount"];
+    [pushInstallation saveEventually];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -97,6 +107,10 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
 - (void) application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
     application.applicationIconBadgeNumber = 0;
     [PFPush handlePush: userInfo];
+}
+
+- (NSUInteger) application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+    return UIInterfaceOrientationMaskAll;
 }
 
 - (RKObjectManager*) objectManager {

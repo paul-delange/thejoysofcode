@@ -29,6 +29,7 @@
 @property (strong, nonatomic) NSFetchedResultsController* tableController;
 @property (strong, nonatomic) TumblrObjectPaginator* objectPaginator;
 @property (strong, nonatomic) TimeScroller* timeScroller;
+@property (weak, nonatomic) UIView* sectionHeaderView;
 
 @end
 
@@ -128,9 +129,33 @@
     return YES;
 }
 
+- (NSUInteger) supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAll;
+}
+
 - (void) willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     
     [super willRotateToInterfaceOrientation: toInterfaceOrientation duration: duration];
+}
+
+- (void) viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
+    
+    CAGradientLayer* gradient = nil;
+    for( CALayer* layer in self.sectionHeaderView.layer.sublayers ) {
+        if( [layer isKindOfClass: [CAGradientLayer class]] ) {
+            gradient = (CAGradientLayer*)layer;
+            break;
+        }
+    }
+    
+    if( !gradient )
+        gradient = [CAGradientLayer new];
+    
+    gradient.frame = CGRectMake(0, 0, CGRectGetWidth(self.sectionHeaderView.frame), CGRectGetHeight(self.sectionHeaderView.frame));
+    gradient.colors = @[(id)[UIColor blackColor].CGColor, (id)[UIColor blackColor].CGColor, (id)[UIColor colorWithWhite: 0.0 alpha: 0.01].CGColor];
+    gradient.locations = @[@(0), @(0.7), @(1.0)];
+    [self.sectionHeaderView.layer insertSublayer: gradient atIndex: 0];
 }
 
 #pragma mark - Actions
@@ -229,15 +254,11 @@
         pushText.backgroundColor = [UIColor clearColor];
         [headerView addSubview: pushText];
         
-        CAGradientLayer* gradient = [CAGradientLayer layer];
-        gradient.frame = headerView.frame;
-        gradient.colors = @[(id)[UIColor blackColor].CGColor, (id)[UIColor blackColor].CGColor, (id)[UIColor colorWithWhite: 0.0 alpha: 0.01].CGColor];
-        gradient.locations = @[@(0), @(0.7), @(1.0)];
-        [headerView.layer insertSublayer: gradient atIndex: 0];
-        
         UITapGestureRecognizer* recognizer = [[UITapGestureRecognizer alloc] initWithTarget: self
                                                                                      action: @selector(pushNotificationsTapped:)];
         [headerView addGestureRecognizer: recognizer];
+        
+        self.sectionHeaderView = headerView;
         
         return headerView;
     }

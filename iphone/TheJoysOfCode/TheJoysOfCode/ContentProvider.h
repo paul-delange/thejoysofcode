@@ -12,5 +12,6 @@
 
 + (NSString*) baseURL;
 + (NSString*) contentLanguage;
++ (NSString*) feedbackEmail;
 
 @end

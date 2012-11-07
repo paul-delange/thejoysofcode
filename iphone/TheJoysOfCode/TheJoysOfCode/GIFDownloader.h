@@ -12,7 +12,9 @@ FOUNDATION_EXTERN NSString * const kGIF2MP4ConversionErrorDomain;
 typedef enum {
     kGIF2MP4ConversionErrorInvalidGIFImage = 0,
     kGIF2MP4ConversionErrorAlreadyProcessing,
-    kGIF2MP4ConversionErrorBufferingFailed
+    kGIF2MP4ConversionErrorBufferingFailed,
+    kGIF2MP4ConversionErrorInvalidResolution,
+    kGIF2MP4ConversionErrorTimedOut,
 } kGIF2MP4ConversionError;
 
 

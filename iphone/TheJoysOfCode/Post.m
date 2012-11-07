@@ -13,14 +13,6 @@
 
 + (void) load {
     @autoreleasepool {
-        [[NSNotificationCenter defaultCenter] addObserver: [self class]
-                                                 selector: @selector(objectContextHasSaved:)
-                                                     name: NSManagedObjectContextDidSaveNotification
-                                                   object: nil];
-        [[NSNotificationCenter defaultCenter] addObserver: [self class]
-                                                 selector: @selector(objectContextWillSave:)
-                                                     name: NSManagedObjectContextWillSaveNotification
-                                                   object: nil];
         
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -32,43 +24,26 @@
                                       withIntermediateDirectories: YES
                                                        attributes: nil
                                                             error: nil];
-        /*
-        if(![[NSFileManager defaultManager] fileExistsAtPath: thumbPath])
-            [[NSFileManager defaultManager] createDirectoryAtPath: thumbPath
-                                      withIntermediateDirectories: YES
-                                                       attributes: nil
-                                                            error: nil];
-          */
     }
+}
+
++ (void) initialize {
+    /*[[NSNotificationCenter defaultCenter] addObserver: [Post class]
+                                             selector: @selector(objectContextHasSaved:)
+                                                 name: NSManagedObjectContextDidSaveNotification
+                                               object: nil];
+     */
+    [[NSNotificationCenter defaultCenter] addObserver: [self class]
+                                             selector: @selector(objectContextWillSave:)
+                                                 name: NSManagedObjectContextWillSaveNotification
+                                               object: nil];
 }
 
 + (void) objectContextHasSaved: (NSNotification*) notification {
-    @try {
-        //id value = [self lastPostDate];
-        PFInstallation* pushInstallation = [PFInstallation currentInstallation];
-        [pushInstallation setObject: [self numberOfEntities] forKey: @"postCount"];
-        [pushInstallation saveEventually:^(BOOL succeeded, NSError *error) {
-            if( succeeded ) {
-                
-            }
-            else {
-                NSLog(@"Error: %@", error);
-            }
-        }];
 
-    }
-    @catch (NSException *exception) {
-        if( [exception.name isEqualToString: @"NSInternalInconsistencyException"] ) {
-            NSLog(@"Ignore stupid parse error");
-        }
-        else {
-            @throw exception;
-        }
-    }
 }
 
 + (void) objectContextWillSave: (NSNotification*) notification {
-    @try {
         NSSet* deletedObjects = [notification.userInfo objectForKey: NSDeletedObjectsKey];
         NSSet* posts = [deletedObjects filteredSetUsingPredicate: [NSPredicate predicateWithFormat: @"SELF isKindOfClass: %@", self]];
         
@@ -86,10 +61,6 @@
                 }
             }
         }
-    }
-    @catch (NSException *exception) {
-        NSLog(@"Exception: %@", exception);
-    }
 }
 /*
 + (NSDate*) lastPostDate {
@@ -135,7 +106,10 @@
     AVAssetImageGenerator* imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset: asset];
     CMTime duration = asset.duration;
     CMTime time = CMTimeMultiply(duration, 0.1);
-    return [UIImage imageWithCGImage: [imageGenerator copyCGImageAtTime: time actualTime: NULL error: nil]];
+    CGImageRef cgImg = [imageGenerator copyCGImageAtTime: time actualTime: NULL error: nil];
+    UIImage* uiImg = [UIImage imageWithCGImage: cgImg];
+    CGImageRelease(cgImg);
+    return uiImg;
 }
 
 - (void) willSave {
