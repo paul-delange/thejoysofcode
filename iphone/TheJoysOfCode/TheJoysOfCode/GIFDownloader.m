@@ -22,7 +22,7 @@ NSString * const kGIF2MP4ConversionErrorDomain = @"GIF2MP4ConversionError";
     static NSOperationQueue* requestQueue = nil;
     if( !requestQueue ) {
         requestQueue = [NSOperationQueue new];
-        requestQueue.maxConcurrentOperationCount = 1;
+        requestQueue.maxConcurrentOperationCount = 5;
         
     }
     return requestQueue;
@@ -320,8 +320,9 @@ static __strong NSMutableArray* requests = nil;
         error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
                                     code: kGIF2MP4ConversionErrorTimedOut
                                 userInfo: nil];
-        CFRelease(source);
         [videoWriterInput markAsFinished];
+        CFRelease(source);
+        
         completionHandler(outFilePath.absoluteString, error);
     }
     
