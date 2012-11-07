@@ -139,7 +139,7 @@
                                                  options: UIViewAnimationOptionCurveEaseOut
                                               animations: ^{
                                                   self.detailDescriptionLabel.alpha = 0.f;
-     
+                                                  
                                               } completion: ^(BOOL finished) {
                                                   
                                                   

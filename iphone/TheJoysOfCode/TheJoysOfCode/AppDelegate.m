@@ -13,6 +13,8 @@
 #import "Post.h"
 #import "GIFDownloader.h"
 
+#import "iAdSplitViewController.h"
+
 #import <Parse/Parse.h>
 
 NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotifications";
