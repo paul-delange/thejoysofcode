@@ -62,6 +62,29 @@ static const char* availableProviders[] = {"fr", "en"};
     NSString* previousLanguage = [[NSUserDefaults standardUserDefaults] stringForKey: kContentLanguageKey];
     
     if( ![previousLanguage isEqualToString: identifier] ) {
+        /*
+        NSString* defaultDataPath = [[NSBundle mainBundle] pathForResource: identifier ofType: @"bundle"];
+        
+        if( defaultDataPath ) {
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString *documentsDirectory = [paths objectAtIndex:0];
+            
+            for(NSString* item in [[NSFileManager defaultManager] contentsOfDirectoryAtPath: defaultDataPath error: nil]) {
+                NSString* path = [defaultDataPath stringByAppendingPathComponent: item];
+                NSString* targetPath = [documentsDirectory stringByAppendingPathComponent: item];
+                NSError* error = nil;
+                
+                if( [[NSFileManager defaultManager] fileExistsAtPath: targetPath]) {
+                    [[NSFileManager defaultManager] removeItemAtPath: targetPath error: nil];
+                }
+                
+                [[NSFileManager defaultManager] copyItemAtPath: path
+                                                        toPath: targetPath
+                                                         error: &error];
+            }   
+        }
+        
+        */
         [[NSUserDefaults standardUserDefaults] setObject: identifier forKey: kContentLanguageKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -90,6 +113,20 @@ static const char* availableProviders[] = {"fr", "en"};
     }
     else if( [lang isEqualToString: @"en"] ) {
         return @"thejoysofcode@gmail.com";
+    }
+    
+    return @"";
+}
+
++ (NSString*) flurryID {
+    NSString* lang = [[NSUserDefaults standardUserDefaults] stringForKey: kContentLanguageKey];
+    NSAssert(lang, @"There was no language set in your content provider");
+    
+    if( [lang isEqualToString: @"fr"] ) {
+        return @"SZ86XZS9WDBPPD797FWS";
+    }
+    else if( [lang isEqualToString: @"en"] ) {
+        return @"268PTSXVBJH6R3VNKN59";
     }
     
     return @"";

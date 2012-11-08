@@ -70,6 +70,8 @@
 
 - (void)setDetailItem:(Post*)newDetailItem
 {
+    self.moviePlayer = nil;
+    
     if (_detailItem != newDetailItem) {
         _detailItem = newDetailItem;
         
@@ -86,6 +88,13 @@
             ideaViewShowing = NO;
             [self configureView];
         }
+        
+        NSUInteger count = [[NSUserDefaults standardUserDefaults] integerForKey: kUserPreferenceHasWatchedVideoCount];
+        count++;
+        [[NSUserDefaults standardUserDefaults] setInteger: count forKey: kUserPreferenceHasWatchedVideoCount];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        
+        [Flurry logEvent: @"Details" withParameters: @{ @"Image" : newDetailItem.url}];
     }
     
     if (self.masterPopoverController != nil) {
@@ -152,11 +161,11 @@
                                                   
                                               } completion: ^(BOOL finished) {
                                                   
-                                                  
+                                                  /*
                                                   NSAssert(self.moviePlayer.loadState & (MPMovieLoadStatePlayable | MPMovieLoadStatePlaythroughOK), @"The movie player was in a bad load state: %d", self.moviePlayer.loadState);
                                                   NSAssert(self.moviePlayer.playbackState == MPMoviePlaybackStateStopped, @"Movie will not start at the beginning");
                                                   NSAssert(self.moviePlayer.isPreparedToPlay, @"Movie player was not prepared");
-                                                  
+                                                  */
                                                   [self.moviePlayer play];
                                               }];
                          }];
@@ -240,8 +249,6 @@
 }
 
 - (void) moviePlaybackStateChanged: (NSNotification*) notification {
-    //NSLog(@"Playback state: %d", self.moviePlayer.playbackState);
-    
     if( self.moviePlayer.playbackState == MPMoviePlaybackStatePaused ) {
         //Finished loop
         if( !ideaViewShowing ) {
@@ -260,7 +267,6 @@
 }
 
 - (void) movieFinishedPlaying: (NSNotification*) notification {
-    NSLog(@"Finished: %@", notification);
     if( notification.object == self.moviePlayer ) {
         
     }

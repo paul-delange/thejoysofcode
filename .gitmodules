@@ -7,3 +7,6 @@
 [submodule "iphone/TimeScroller"]
 	path = iphone/TimeScroller
 	url = https://github.com/andrewroycarter/TimeScroller.git
+[submodule "iphone/MKStoreKit"]
+	path = iphone/MKStoreKit
+	url = https://github.com/MugunthKumar/MKStoreKit

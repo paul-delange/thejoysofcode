@@ -29,15 +29,16 @@
                                       withIntermediateDirectories: YES
                                                        attributes: nil
                                                             error: nil];
+         
     }
 }
 
 + (void) initialize {
-    /*[[NSNotificationCenter defaultCenter] addObserver: [Post class]
+    [[NSNotificationCenter defaultCenter] addObserver: [Post class]
                                              selector: @selector(objectContextHasSaved:)
                                                  name: NSManagedObjectContextDidSaveNotification
                                                object: nil];
-     */
+     
     [[NSNotificationCenter defaultCenter] addObserver: [self class]
                                              selector: @selector(objectContextWillSave:)
                                                  name: NSManagedObjectContextWillSaveNotification
@@ -45,7 +46,7 @@
 }
 
 + (void) objectContextHasSaved: (NSNotification*) notification {
-
+    
 }
 
 + (void) objectContextWillSave: (NSNotification*) notification {
@@ -54,39 +55,12 @@
         
         for(Post* post in posts) {
             NSString* path = [post pathToCachedVideo];
-            
-            NSLog(@"Deleting object at path: %@", path);
-            
             if( [[NSFileManager defaultManager] fileExistsAtPath: path] ) {
                 NSError* error=nil;
                 [[NSFileManager defaultManager] removeItemAtPath: path error: &error];
-                
-                if( error ) {
-                    NSLog(@"Error deleting file: %@", error);
-                }
             }
         }
 }
-/*
-+ (NSDate*) lastPostDate {
-    NSFetchRequest* request = [self fetchRequest];
-    [request setResultType: NSDictionaryResultType];
-    
-    NSExpression* keyPathExpression = [NSExpression expressionForKeyPath: @"publishedDate"];
-    NSExpression* maxExpression = [NSExpression expressionForFunction: @"max:" arguments: @[keyPathExpression]];
-    NSExpressionDescription* expressionDescription = [NSExpressionDescription new];
-    [expressionDescription setName: @"maxDate"];
-    [expressionDescription setExpression: maxExpression];
-    [expressionDescription setExpressionResultType: NSDateAttributeType];
-    
-    [request setPropertiesToFetch: @[expressionDescription]];
-    
-    NSArray* objs = [self executeFetchRequest: request];
-    if( objs.count ) {
-        return [objs[0] valueForKeyPath: @"maxDate"];
-    }
-    return nil;
-}*/
 
 - (NSString*) pathToCachedVideo {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -117,23 +91,9 @@
 }
 
 - (UIImage*) thumbnail {
-    /*
-    NSURL* url = [NSURL fileURLWithPath: self.pathToCachedVideo];
-    
-    NSAssert(url, @"Could not create a url for: %@", self.pathToCachedVideo);
-    
-    AVAsset* asset = [AVAsset assetWithURL: url];
-    AVAssetImageGenerator* imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset: asset];
-    CMTime duration = asset.duration;
-    CMTime time = CMTimeMultiply(duration, 0.1);
-    CGImageRef cgImg = [imageGenerator copyCGImageAtTime: time actualTime: NULL error: nil];
-    UIImage* uiImg = [UIImage imageWithCGImage: cgImg];
-    CGImageRelease(cgImg);
-    return uiImg;
-     */
     return [UIImage imageWithContentsOfFile: self.pathToThumbnail];
 }
-
+/*
 - (void) willSave {
     NSDictionary* changed = self.changedValues;
     if( [[changed objectForKey: @"picture"] length] && self.primaryKeyValue) {
@@ -143,17 +103,17 @@
                                      completed: ^(NSString *outputFilePath, NSError *error) {
                                          Post* post = [Post findFirstByAttribute: @"primaryKey" withValue: self.primaryKey];
                                          if( !error ) {
-                                             post.hasDownloadedVideoValue = YES;
-                                             [kGlobalObjectManager().objectStore save: nil];
+                                             post.hasDownloadedVideoValue = YES; 
                                          }
-                                         
-                                         //BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath: outputFilePath];
-                                         //NSLog(@"File %@", exists?@"exists":@"doesn't exist");
+                                         else {
+                                             [post deleteEntity];
+                                         }
+                                         [kGlobalObjectManager().objectStore save: nil];
                                      }];
 
     }
     
     [super willSave];
-}
+}*/
 
 @end

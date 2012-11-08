@@ -14,8 +14,15 @@
     #import <RestKit/RestKit.h>
     #import "RKObjectLoader+Extended.h"
 
+    #import "TestFlight.h"
+    #import "Flurry.h"
+
     FOUNDATION_EXTERN RKObjectManager* kGlobalObjectManager(void);
 
     FOUNDATION_EXTERN NSString * const kUserPreferenceHasUsedPushNotifications;
+    FOUNDATION_EXTERN NSString * const kUserPreferenceHasWatchedVideoCount;
 
+    FOUNDATION_EXTERN NSString * const kSubscriptionIdentifier;
+
+    FOUNDATION_EXTERN inline BOOL isPro();
 #endif

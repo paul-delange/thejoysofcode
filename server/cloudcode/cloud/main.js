@@ -2,15 +2,21 @@
 Parse.Cloud.define("sendPush", function(request, cloudResponse) {
 
 	var url;
-	
-	if( request.params.language === "fr" ) {
-		url = 'http://api.tumblr.com/v2/blog/lesjoiesducode.tumblr.com/info';
-  	}
-else if( request.params.language === "en" ) {
-		url = 'http://api.tumblr.com/v2/blog/thejoysofcode.tumblr.com/info';
-}
+	var msg;
 
-Parse.Cloud.httpRequest({
+	if( request.params.language === "fr" ) {
+		url = "http://api.tumblr.com/v2/blog/lesjoiesducode.tumblr.com/info";
+		msg = "Nouvelles images disponibles";
+  	}
+	else if( request.params.language === "en" ) {
+		url = "http://api.tumblr.com/v2/blog/thejoysofcode.tumblr.com/info";
+		msg = "New videos available";
+	}
+	else {
+		cloudResponse.error("Bad language parameter: " + request.params.language);
+	}
+
+	Parse.Cloud.httpRequest({
   		url: url,
   		params: {
     			api_key : '2oiq2RJVxKq2Pk2jaHoyLvOwiknYNKiuBwaZIXljQhSyMHsmMb'
@@ -36,7 +42,10 @@ Parse.Cloud.httpRequest({
 					cloudResponse.error("Error happened");
 				}
 			});
-  		}
+  		},
+	       error: function(httpResponse) {
+			cloudResponse.error("Tumblr error with: " + url);
+		}
 	});
 
 });

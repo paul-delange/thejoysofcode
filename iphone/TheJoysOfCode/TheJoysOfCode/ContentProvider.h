@@ -13,5 +13,6 @@
 + (NSString*) baseURL;
 + (NSString*) contentLanguage;
 + (NSString*) feedbackEmail;
++ (NSString*) flurryID;
 
 @end

@@ -12,14 +12,26 @@
 
 #import "Post.h"
 #import "GIFDownloader.h"
+#import "MKStoreManager.h"
 
 #import "iAdSplitViewController.h"
 
 #import <Parse/Parse.h>
 
 NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotifications";
+NSString * const kUserPreferenceHasWatchedVideoCount = @"VideoWatchCount";
+NSString * const kSubscriptionIdentifier = @"Subscription.1.month";
 
 @implementation AppDelegate
+
++ (void) initialize {
+    NSDictionary* userInfoDefaults = @{
+        kUserPreferenceHasWatchedVideoCount : @(0),
+        kUserPreferenceHasUsedPushNotifications : @NO
+    };
+    [[NSUserDefaults standardUserDefaults] registerDefaults: userInfoDefaults];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -35,9 +47,27 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
     RKLogConfigureByName("RestKit", RKLogLevelOff);
 #endif
     
+    [TestFlight takeOff: @"d43933390907321b6b78ca583d0143f6_MTEzNzIwMjAxMi0wNy0yNCAwODo1MDo0Mi43OTM3ODk"];
+    
+#if DEBUG
+    [TestFlight setDeviceIdentifier: [[UIDevice currentDevice] uniqueIdentifier]];
+#endif
+    
+    [Flurry startSession: [ContentProvider flurryID]];
+    
     kGlobalObjectManager();
     
     [Parse setApplicationId: @"54hNrGRnJzXeUH344iTLQY6GQp1Rv5OD7ZYknS3f" clientKey: @"6Z1DPP9R7QN7CHX4LQEQnDnmOU9rCmr9QzF0v1ZZ"];
+    [MKStoreManager sharedManager];
+    
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(subscriptionPurchased:)
+                                                 name: kSubscriptionsPurchasedNotification
+                                               object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(subscriptionWasInvalid:)
+                                                 name: kSubscriptionsInvalidNotification
+                                               object: nil];
     
     PFInstallation* pushInstallation = [PFInstallation currentInstallation];
     [pushInstallation setObject: [ContentProvider contentLanguage] forKey: @"language"];
@@ -92,10 +122,9 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
     [PFPush storeDeviceToken: deviceToken];
     [PFPush subscribeToChannelInBackground: @"" block: ^(BOOL succeeded, NSError *error) {
         if( succeeded ) {
-            NSLog(@"Subscribed to broadcast channel");
         }
         else {
-            
+            TFLog(@"Error subscribing to broadcast channel: %@", error);
         }
     }];
 }
@@ -135,24 +164,26 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
             [provider setObjectMapping: postMapping forKeyPath: @"response.posts"];
             
             provider.paginationMapping = paginationMapping;
-            
-            NSArray* withoutVideo = [Post findAllWithPredicate: [NSPredicate predicateWithFormat: @"hasDownloadedVideo == NO"]];
-            for(Post* post in withoutVideo) {
-                [GIFDownloader sendAsynchronousRequest: post.picture
-                                      downloadFilePath: post.pathToCachedVideo
-                                     thumbnailFilePath: post.pathToThumbnail
-                                             completed: ^(NSString *outputFilePath, NSError *error) {
-                                                 Post* post2 = [Post findFirstByAttribute: @"primaryKey" withValue: post.primaryKey];
-                                                 if( !error ) {
-                                                     post2.hasDownloadedVideoValue = YES;
-                                                     [kGlobalObjectManager().objectStore save: nil];
-                                                 }
-                                             }];
-            }
         }];
     }
     
     return _objectManager;
+}
+
+#pragma mark - Subscriptions
+- (void) subscriptionWasInvalid: (NSNotification*) notification {
+    
+}
+
+- (void) subscriptionPurchased : (NSNotification*) notification {
+    NSString* title = NSLocalizedString(@"Subscription Complete", @"");
+    NSString* msg = NSLocalizedString(@"Merci, you can now watch all our videos and enjoy the app with us.", @"");
+    UIAlertView* alert = [[UIAlertView alloc] initWithTitle: title
+                                                    message: msg
+                                                   delegate: nil
+                                          cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                          otherButtonTitles: nil];
+    [alert show];
 }
 
 @end
@@ -161,4 +192,8 @@ NSString * const kUserPreferenceHasUsedPushNotifications = @"HasEnabledPushNotif
 RKObjectManager* kGlobalObjectManager(void) {
     AppDelegate* app = ((AppDelegate*)[[UIApplication sharedApplication] delegate]);
     return app.objectManager;
+}
+
+inline BOOL isPro() {
+    return [[MKStoreManager sharedManager] isSubscriptionActive: kSubscriptionIdentifier];
 }

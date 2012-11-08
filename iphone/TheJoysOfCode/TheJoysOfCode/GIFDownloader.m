@@ -88,6 +88,7 @@ static __strong NSMutableArray* requests = nil;
                                                          error: &error];
         
         if( error ) {
+            [self queueContainsRequest: request];
             handler(filePath, error);
         }
         else {
@@ -95,10 +96,11 @@ static __strong NSMutableArray* requests = nil;
                 [[NSFileManager defaultManager] removeItemAtPath: filePath
                                                            error: &error];
                 if( error ) {
+                    [self queueContainsRequest: request];
                     handler(filePath, error);
                 }
             }
-            
+
             NSURL* outFilePath = [NSURL fileURLWithPath: filePath];
             
             kGIF2MP4ConversionCompleted completionHandler = ^(NSString* path, NSError* error) {
@@ -190,6 +192,8 @@ static __strong NSMutableArray* requests = nil;
     
     AVAssetWriterInput* videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType: AVMediaTypeVideo
                                                                               outputSettings: videoSettings];
+    videoWriterInput.expectsMediaDataInRealTime = YES;
+    
     NSAssert([videoWriter canAddInput: videoWriterInput], @"Video writer can not add video writer input");
     [videoWriter addInput: videoWriterInput];
     
@@ -207,13 +211,8 @@ static __strong NSMutableArray* requests = nil;
     [videoWriter startWriting];
     [videoWriter startSessionAtSourceTime: CMTimeMakeWithSeconds(totalFrameDelay, FPS)];
     
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    
-    void (^videoWriterReadyForData)(void) = ^{
-        
-        NSError* error = nil;
-        
-        while ([videoWriterInput isReadyForMoreMediaData] ) {
+    while(1) {
+        if( videoWriterInput.isReadyForMoreMediaData ) {
 #if DEBUG
             //NSLog(@"Drawing frame %lu/%lu", currentFrameNumber, totalFrameCount);
 #endif
@@ -223,6 +222,7 @@ static __strong NSMutableArray* requests = nil;
                 CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex(source, currentFrameNumber, NULL);
                 CFDictionaryRef gifProperties = CFDictionaryGetValue(properties, kCGImagePropertyGIFDictionary);
                 
+                //Save our thumbnail
                 if( thumbnailFrameCount == currentFrameNumber ) {
                     if( [[NSFileManager defaultManager] fileExistsAtPath: thumbFilePath] ) {
                         [[NSFileManager defaultManager] removeItemAtPath: thumbFilePath error: nil];
@@ -230,68 +230,40 @@ static __strong NSMutableArray* requests = nil;
                     
                     UIImage* img = [UIImage imageWithCGImage: imgRef];
                     [UIImagePNGRepresentation(img) writeToFile: thumbFilePath atomically: YES];
-                    
                 }
                 
                 if( gifProperties ) {
-                    NSNumber* delayTime = CFDictionaryGetValue(gifProperties, kCGImagePropertyGIFDelayTime);
-                    
-                    totalFrameDelay += delayTime.floatValue;
-                    
                     CVPixelBufferRef pxBuffer = [self newBufferFrom: imgRef
-                                                withPixelBufferPool: adaptor.pixelBufferPool];
-                    
-                    CMTime time = CMTimeMakeWithSeconds(totalFrameDelay, FPS);
-                    
+                                                withPixelBufferPool: adaptor.pixelBufferPool
+                                                      andAttributes: adaptor.sourcePixelBufferAttributes];
                     if( pxBuffer ) {
-                        if( !videoWriterInput.isReadyForMoreMediaData ) {
-                            CVBufferRelease(pxBuffer);
-                            CFRelease(properties);
-                            CGImageRelease(imgRef);
-                            break;
-                        }
+                        NSNumber* delayTime = CFDictionaryGetValue(gifProperties, kCGImagePropertyGIFDelayTime);
+                        totalFrameDelay += delayTime.floatValue;
+                        CMTime time = CMTimeMakeWithSeconds(totalFrameDelay, FPS);
+                        
                         if( ![adaptor appendPixelBuffer: pxBuffer withPresentationTime: time] ) {
-                            //Could not write to buffers
-                            [videoWriterInput markAsFinished];
-                            error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
-                                                        code: kGIF2MP4ConversionErrorBufferingFailed
-                                                    userInfo: nil];
-                            CVBufferRelease(pxBuffer);
+                            TFLog(@"Could not save pixel buffer!: %@", videoWriter.error);
                             CFRelease(properties);
                             CGImageRelease(imgRef);
+                            CVBufferRelease(pxBuffer);
                             break;
                         }
                         
                         CVBufferRelease(pxBuffer);
                     }
-                    else {
-                        CFRelease(properties);
-                        CGImageRelease(imgRef);
-                        break;
-                    }
-                }
-                else {
-                    //Did not have a GIF image
-                    [videoWriterInput markAsFinished];
-                    error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
-                                                code: kGIF2MP4ConversionErrorInvalidGIFImage
-                                            userInfo: nil];
-                    if( properties ) CFRelease(properties);
-                    CGImageRelease(imgRef);
-                    break;
                 }
                 
                 if( properties ) CFRelease(properties);
                 CGImageRelease(imgRef);
+                
+                currentFrameNumber++;
             }
             else {
-                //Did not have a valid image returned -> input is finished
+                //was no image returned -> end of file?
                 [videoWriterInput markAsFinished];
                 
-                CFRelease(source);
-                
                 void (^videoSaveFinished)(void) = ^{
-                    completionHandler(outFilePath.absoluteString, error);
+                    completionHandler(outFilePath.absoluteString, nil);
                 };
                 
                 if( [videoWriter respondsToSelector: @selector(finishWritingWithCompletionHandler:)]) {
@@ -301,37 +273,23 @@ static __strong NSMutableArray* requests = nil;
                     [videoWriter finishWriting];
                     videoSaveFinished();
                 }
-                
-                dispatch_semaphore_signal(sema);
-                
-                break;
+        break;
             }
-            
-            currentFrameNumber++;
+        }
+        else {
+            //NSLog(@"Was not ready...");
+            [NSThread sleepForTimeInterval: 0.1];
         }
     };
     
-    [videoWriterInput requestMediaDataWhenReadyOnQueue: dispatch_get_current_queue()
-                                            usingBlock: videoWriterReadyForData];
-    
-    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 120 * NSEC_PER_SEC);
-    if( dispatch_semaphore_wait(sema, timeout) ) {
-        //Timed out
-        error = [NSError errorWithDomain: kGIF2MP4ConversionErrorDomain
-                                    code: kGIF2MP4ConversionErrorTimedOut
-                                userInfo: nil];
-        [videoWriterInput markAsFinished];
-        CFRelease(source);
-        
-        completionHandler(outFilePath.absoluteString, error);
-    }
-    
-    dispatch_release(sema);
+    CFRelease(source);
     
     return YES;
 };
 
-+ (CVPixelBufferRef) newBufferFrom: (CGImageRef) frame withPixelBufferPool: (CVPixelBufferPoolRef) pixelBufferPool {
++ (CVPixelBufferRef) newBufferFrom: (CGImageRef) frame
+               withPixelBufferPool: (CVPixelBufferPoolRef) pixelBufferPool
+                     andAttributes: (NSDictionary*) attributes {
     NSParameterAssert(frame);
     
     size_t width = CGImageGetWidth(frame);
@@ -345,9 +303,7 @@ static __strong NSMutableArray* requests = nil;
     if( pixelBufferPool )
         status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pixelBufferPool, &pxBuffer);
     else {
-        NSDictionary* options = @{(NSString*)kCVPixelBufferCGImageCompatibilityKey : @YES, (NSString*)kCVPixelBufferCGBitmapContextCompatibilityKey : @YES};
-        
-        status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef)options, &pxBuffer);
+        status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef)attributes, &pxBuffer);
     }
     
     NSAssert(status == kCVReturnSuccess, @"Could not create a pixel buffer");

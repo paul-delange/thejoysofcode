@@ -46,6 +46,18 @@
 		525344CA1647F70E007C5221 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525344C91647F70E007C5221 /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		5280784A164AA2FF008F9CC5 /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 52807848164AA2FF008F9CC5 /* MainStoryboard_iPad.storyboard */; };
 		5280784B164AA2FF008F9CC5 /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 52807849164AA2FF008F9CC5 /* MainStoryboard_iPhone.storyboard */; };
+		5298E238164BB597004EDD63 /* MKSKProduct.m in Sources */ = {isa = PBXBuildFile; fileRef = 5298E22E164BB597004EDD63 /* MKSKProduct.m */; };
+		5298E239164BB597004EDD63 /* MKSKSubscriptionProduct.m in Sources */ = {isa = PBXBuildFile; fileRef = 5298E230164BB597004EDD63 /* MKSKSubscriptionProduct.m */; };
+		5298E23A164BB597004EDD63 /* MKStoreKitConfigs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5298E232164BB597004EDD63 /* MKStoreKitConfigs.plist */; };
+		5298E23B164BB597004EDD63 /* MKStoreManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5298E234164BB597004EDD63 /* MKStoreManager.m */; };
+		5298E246164BB5C0004EDD63 /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5298E245164BB5C0004EDD63 /* SFHFKeychainUtils.m */; };
+		5298E24F164BDB3D004EDD63 /* libTestFlight.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5298E24E164BDB3D004EDD63 /* libTestFlight.a */; };
+		5298E251164BDC9A004EDD63 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5298E250164BDC9A004EDD63 /* libz.dylib */; };
+		5298E255164BDE1D004EDD63 /* libFlurry.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5298E254164BDE1D004EDD63 /* libFlurry.a */; };
+		5298E257164BE940004EDD63 /* Default-Portrait~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 5298E256164BE93F004EDD63 /* Default-Portrait~ipad.png */; };
+		5298E25F164BEA22004EDD63 /* Default-Portrait@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 5298E25E164BEA22004EDD63 /* Default-Portrait@2x~ipad.png */; };
+		5298E261164BEA62004EDD63 /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 5298E260164BEA62004EDD63 /* Default-Landscape@2x~ipad.png */; };
+		5298E263164BEA8F004EDD63 /* Default-Landscape~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 5298E262164BEA8F004EDD63 /* Default-Landscape~ipad.png */; };
 		52D030E816492AF200CF1C20 /* iAdNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52D030E716492AF100CF1C20 /* iAdNavigationController.m */; };
 		52D030FE16492DEA00CF1C20 /* iAd.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D030FD16492DEA00CF1C20 /* iAd.framework */; };
 		52D03107164937AA00CF1C20 /* TimeScroller.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 52D03104164937AA00CF1C20 /* TimeScroller.bundle */; };
@@ -118,6 +130,26 @@
 		525344C91647F70E007C5221 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		52807848164AA2FF008F9CC5 /* MainStoryboard_iPad.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = MainStoryboard_iPad.storyboard; path = TheJoysOfCode/MainStoryboard_iPad.storyboard; sourceTree = "<group>"; };
 		52807849164AA2FF008F9CC5 /* MainStoryboard_iPhone.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = MainStoryboard_iPhone.storyboard; path = TheJoysOfCode/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
+		5298E22D164BB597004EDD63 /* MKSKProduct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MKSKProduct.h; path = ../MKStoreKit/MKSKProduct.h; sourceTree = "<group>"; };
+		5298E22E164BB597004EDD63 /* MKSKProduct.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MKSKProduct.m; path = ../MKStoreKit/MKSKProduct.m; sourceTree = "<group>"; };
+		5298E22F164BB597004EDD63 /* MKSKSubscriptionProduct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MKSKSubscriptionProduct.h; path = ../MKStoreKit/MKSKSubscriptionProduct.h; sourceTree = "<group>"; };
+		5298E230164BB597004EDD63 /* MKSKSubscriptionProduct.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MKSKSubscriptionProduct.m; path = ../MKStoreKit/MKSKSubscriptionProduct.m; sourceTree = "<group>"; };
+		5298E231164BB597004EDD63 /* MKStoreKitConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MKStoreKitConfigs.h; path = ../MKStoreKit/MKStoreKitConfigs.h; sourceTree = "<group>"; };
+		5298E232164BB597004EDD63 /* MKStoreKitConfigs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = MKStoreKitConfigs.plist; path = ../MKStoreKit/MKStoreKitConfigs.plist; sourceTree = "<group>"; };
+		5298E233164BB597004EDD63 /* MKStoreManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MKStoreManager.h; path = ../MKStoreKit/MKStoreManager.h; sourceTree = "<group>"; };
+		5298E234164BB597004EDD63 /* MKStoreManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MKStoreManager.m; path = ../MKStoreKit/MKStoreManager.m; sourceTree = "<group>"; };
+		5298E244164BB5C0004EDD63 /* SFHFKeychainUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SFHFKeychainUtils.h; path = ../MKStoreKit/Externals/SFHFKeychainUtils.h; sourceTree = "<group>"; };
+		5298E245164BB5C0004EDD63 /* SFHFKeychainUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SFHFKeychainUtils.m; path = ../MKStoreKit/Externals/SFHFKeychainUtils.m; sourceTree = "<group>"; };
+		5298E247164BBC05004EDD63 /* TheJoysOfCode.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = TheJoysOfCode.entitlements; path = TheJoysOfCode/TheJoysOfCode.entitlements; sourceTree = "<group>"; };
+		5298E24D164BDB3D004EDD63 /* TestFlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlight.h; sourceTree = "<group>"; };
+		5298E24E164BDB3D004EDD63 /* libTestFlight.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libTestFlight.a; sourceTree = "<group>"; };
+		5298E250164BDC9A004EDD63 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		5298E253164BDE1C004EDD63 /* Flurry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Flurry.h; sourceTree = "<group>"; };
+		5298E254164BDE1D004EDD63 /* libFlurry.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libFlurry.a; sourceTree = "<group>"; };
+		5298E256164BE93F004EDD63 /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait~ipad.png"; sourceTree = "<group>"; };
+		5298E25E164BEA22004EDD63 /* Default-Portrait@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x~ipad.png"; sourceTree = "<group>"; };
+		5298E260164BEA62004EDD63 /* Default-Landscape@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x~ipad.png"; sourceTree = "<group>"; };
+		5298E262164BEA8F004EDD63 /* Default-Landscape~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape~ipad.png"; sourceTree = "<group>"; };
 		52D030E616492AF100CF1C20 /* iAdNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iAdNavigationController.h; sourceTree = "<group>"; };
 		52D030E716492AF100CF1C20 /* iAdNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iAdNavigationController.m; sourceTree = "<group>"; };
 		52D030FD16492DEA00CF1C20 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = System/Library/Frameworks/iAd.framework; sourceTree = SDKROOT; };
@@ -157,6 +189,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5298E251164BDC9A004EDD63 /* libz.dylib in Frameworks */,
 				52D0315A1649563B00CF1C20 /* Twitter.framework in Frameworks */,
 				52D031581649544000CF1C20 /* MessageUI.framework in Frameworks */,
 				52D030FE16492DEA00CF1C20 /* iAd.framework in Frameworks */,
@@ -184,6 +217,8 @@
 				52FADB2B163E7F3F0015F0DB /* Foundation.framework in Frameworks */,
 				52FADB2D163E7F3F0015F0DB /* CoreGraphics.framework in Frameworks */,
 				525344BB1647F58F007C5221 /* Parse.framework in Frameworks */,
+				5298E24F164BDB3D004EDD63 /* libTestFlight.a in Frameworks */,
+				5298E255164BDE1D004EDD63 /* libFlurry.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,6 +246,10 @@
 				52FADB3A163E7F3F0015F0DB /* Default.png */,
 				52FADB3C163E7F3F0015F0DB /* Default@2x.png */,
 				52FADB3E163E7F3F0015F0DB /* Default-568h@2x.png */,
+				5298E262164BEA8F004EDD63 /* Default-Landscape~ipad.png */,
+				5298E260164BEA62004EDD63 /* Default-Landscape@2x~ipad.png */,
+				5298E25E164BEA22004EDD63 /* Default-Portrait@2x~ipad.png */,
+				5298E256164BE93F004EDD63 /* Default-Portrait~ipad.png */,
 			);
 			name = "Splash screens";
 			sourceTree = "<group>";
@@ -218,6 +257,9 @@
 		52260B60163EA503009ABEF9 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				5298E252164BDDE9004EDD63 /* Flurry */,
+				5298E24C164BDB2E004EDD63 /* TestFlight */,
+				5298E22B164BB58B004EDD63 /* MKStoreKit */,
 				52D031031649379C00CF1C20 /* TimeScroller */,
 				52260B78163EB439009ABEF9 /* Hpple */,
 				52260B61163EA507009ABEF9 /* Mogenerator */,
@@ -241,6 +283,41 @@
 				52260B74163EB436009ABEF9 /* XPathQuery.m */,
 			);
 			name = Hpple;
+			sourceTree = "<group>";
+		};
+		5298E22B164BB58B004EDD63 /* MKStoreKit */ = {
+			isa = PBXGroup;
+			children = (
+				5298E244164BB5C0004EDD63 /* SFHFKeychainUtils.h */,
+				5298E245164BB5C0004EDD63 /* SFHFKeychainUtils.m */,
+				5298E22D164BB597004EDD63 /* MKSKProduct.h */,
+				5298E22E164BB597004EDD63 /* MKSKProduct.m */,
+				5298E22F164BB597004EDD63 /* MKSKSubscriptionProduct.h */,
+				5298E230164BB597004EDD63 /* MKSKSubscriptionProduct.m */,
+				5298E231164BB597004EDD63 /* MKStoreKitConfigs.h */,
+				5298E232164BB597004EDD63 /* MKStoreKitConfigs.plist */,
+				5298E233164BB597004EDD63 /* MKStoreManager.h */,
+				5298E234164BB597004EDD63 /* MKStoreManager.m */,
+			);
+			name = MKStoreKit;
+			sourceTree = "<group>";
+		};
+		5298E24C164BDB2E004EDD63 /* TestFlight */ = {
+			isa = PBXGroup;
+			children = (
+				5298E24D164BDB3D004EDD63 /* TestFlight.h */,
+				5298E24E164BDB3D004EDD63 /* libTestFlight.a */,
+			);
+			name = TestFlight;
+			sourceTree = "<group>";
+		};
+		5298E252164BDDE9004EDD63 /* Flurry */ = {
+			isa = PBXGroup;
+			children = (
+				5298E253164BDE1C004EDD63 /* Flurry.h */,
+				5298E254164BDE1D004EDD63 /* libFlurry.a */,
+			);
+			name = Flurry;
 			sourceTree = "<group>";
 		};
 		52D031031649379C00CF1C20 /* TimeScroller */ = {
@@ -276,6 +353,7 @@
 		52FADB27163E7F3F0015F0DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5298E250164BDC9A004EDD63 /* libz.dylib */,
 				52D031591649563B00CF1C20 /* Twitter.framework */,
 				52D031571649544000CF1C20 /* MessageUI.framework */,
 				52D030FD16492DEA00CF1C20 /* iAd.framework */,
@@ -366,6 +444,7 @@
 		52FADB5D163E7F870015F0DB /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5298E247164BBC05004EDD63 /* TheJoysOfCode.entitlements */,
 				52FADB30163E7F3F0015F0DB /* TheJoysOfCode-Info.plist */,
 				52FADB61163E7FC50015F0DB /* Storyboards */,
 				52FADB60163E7FBA0015F0DB /* Images */,
@@ -471,6 +550,11 @@
 				5222B725164AACBE00584308 /* icon-29@2x.png in Resources */,
 				5222B726164AACBE00584308 /* icon-50.png in Resources */,
 				5222B727164AACBE00584308 /* icon-50@2x.png in Resources */,
+				5298E23A164BB597004EDD63 /* MKStoreKitConfigs.plist in Resources */,
+				5298E257164BE940004EDD63 /* Default-Portrait~ipad.png in Resources */,
+				5298E25F164BEA22004EDD63 /* Default-Portrait@2x~ipad.png in Resources */,
+				5298E261164BEA62004EDD63 /* Default-Landscape@2x~ipad.png in Resources */,
+				5298E263164BEA8F004EDD63 /* Default-Landscape~ipad.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -515,6 +599,10 @@
 				52D030E816492AF200CF1C20 /* iAdNavigationController.m in Sources */,
 				52D03108164937AA00CF1C20 /* TimeScroller.m in Sources */,
 				52D03156164947EA00CF1C20 /* iAdSplitViewController.m in Sources */,
+				5298E238164BB597004EDD63 /* MKSKProduct.m in Sources */,
+				5298E239164BB597004EDD63 /* MKSKSubscriptionProduct.m in Sources */,
+				5298E23B164BB597004EDD63 /* MKStoreManager.m in Sources */,
+				5298E246164BB5C0004EDD63 /* SFHFKeychainUtils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -591,7 +679,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -618,6 +706,7 @@
 		52FADB4F163E7F3F0015F0DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TheJoysOfCode/TheJoysOfCode.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -626,6 +715,10 @@
 				GCC_PREFIX_HEADER = "TheJoysOfCode/TheJoysOfCode-Prefix.pch";
 				INFOPLIST_FILE = "TheJoysOfCode/TheJoysOfCode-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -634,6 +727,7 @@
 		52FADB50163E7F3F0015F0DB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TheJoysOfCode/TheJoysOfCode.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -643,6 +737,10 @@
 				GCC_PREFIX_HEADER = "TheJoysOfCode/TheJoysOfCode-Prefix.pch";
 				INFOPLIST_FILE = "TheJoysOfCode/TheJoysOfCode-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				WRAPPER_EXTENSION = app;

@@ -18,7 +18,9 @@
 #import "TumblrObjectPaginator.h"
 
 #import "Post.h"
+#import "MKStoreManager.h"
 
+#import <Parse/Parse.h>
 #import <QuartzCore/QuartzCore.h>
 #import <AVFoundation/AVFoundation.h>
 
@@ -55,9 +57,9 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-
+    
     self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
-
+    
     if( [self respondsToSelector: @selector(refreshControl)]) {
         UIRefreshControl* refreshControl = [UIRefreshControl new];
         [refreshControl addTarget: self
@@ -183,7 +185,7 @@
     }
     else {
         loading = YES;
-        [self.objectPaginator loadPage: 0];  
+        [self.objectPaginator loadPage: 0];
     }
 }
 
@@ -298,26 +300,71 @@
 
 #pragma mark - UITableViewDelegate
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static const NSInteger kFreeVideoLimit = 5;
+    NSInteger watchedCount = [[NSUserDefaults standardUserDefaults] integerForKey: kUserPreferenceHasWatchedVideoCount];
+    NSInteger warningCount = floorf( kFreeVideoLimit * .75 );
+    
+    if( watchedCount == warningCount ) {
+        NSString* title = NSLocalizedString(@"Free Videos", @"");
+        NSString* msg = NSLocalizedString(@"You have only a few more videos to watch before we will ask you to start paying. If you enjoy this app please consider supporting us in this way, otherwise choose your next videos well!", @"");
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle: title
+                                                        message: msg
+                                                       delegate: nil
+                                              cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                              otherButtonTitles: nil];
+        [alert show];
+        [tableView deselectRowAtIndexPath: indexPath animated: YES];
+        
+        NSUInteger count = [[NSUserDefaults standardUserDefaults] integerForKey: kUserPreferenceHasWatchedVideoCount];
+        count++;
+        [[NSUserDefaults standardUserDefaults] setInteger: count forKey: kUserPreferenceHasWatchedVideoCount];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        
+        return;
+    }
+    
+    if( watchedCount > kFreeVideoLimit ) {
+        if( !isPro() ) {
+            [[MKStoreManager sharedManager] buyFeature: kSubscriptionIdentifier
+                                            onComplete: ^(NSString *purchasedFeature,
+                                                          NSData *purchasedReceipt,
+                                                          NSArray *availableDownloads) {
+                                                
+                                                NSAssert([purchasedFeature isEqualToString: kSubscriptionIdentifier], @"Bad purchase of: %@", purchasedFeature);
+                                                
+                                                if( !purchasedReceipt ) {
+                                                    NSString* title = NSLocalizedString(@"Error occurred", @"");
+                                                    NSString* msg = NSLocalizedString(@"Oh oh, something has gone wrong and your purchase could not be verified. Please try again", @"");
+                                                    UIAlertView* alert = [[UIAlertView alloc] initWithTitle: title
+                                                                                                    message: msg
+                                                                                                   delegate: nil
+                                                                                          cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                                                                          otherButtonTitles: nil];
+                                                    [alert show];
+                                                }
+                                                
+                                            } onCancelled:^{
+                                                NSString* title = NSLocalizedString(@"Error occurred", @"");
+                                                NSString* msg = NSLocalizedString(@"Oh oh, something has gone wrong and your purchase could not be verified. Please try again", @"");
+                                                UIAlertView* alert = [[UIAlertView alloc] initWithTitle: title
+                                                                                                message: msg
+                                                                                               delegate: nil
+                                                                                      cancelButtonTitle: NSLocalizedString(@"OK", @"")
+                                                                                      otherButtonTitles: nil];
+                                                [alert show];
+                                            }];
+            
+            [tableView deselectRowAtIndexPath: indexPath animated: YES];
+            return;
+        }
+    }
+    
     Post* post = [self.tableController objectAtIndexPath: indexPath];
     
     NSAssert([[NSFileManager defaultManager] fileExistsAtPath: post.pathToCachedVideo], @"No video for this post: %@", post);
     
     [self.detailViewController setDetailItem: post];
-    
-    /*
-    UIViewController* destination = segue.destinationViewController;
-    DetailViewController* detailVC = nil;
-    if( [destination isKindOfClass: [UINavigationController class]] ) {
-        detailVC = ((UINavigationController*)destination).viewControllers[0];
-    }
-    else if( [destination isKindOfClass: [DetailViewController class]] ) {
-        detailVC = (DetailViewController*)destination;
-    }
-    
-    NSAssert([detailVC isKindOfClass: [DetailViewController class]], @"DetailVC is not correct type. We had: %@", detailVC);
-    
-    [detailVC setDetailItem: post];
-     */
 }
 
 #pragma mark - RKConfigurationDelegate
@@ -353,6 +400,26 @@
 
 #pragma mark - RKObjectPaginatorDelegate
 - (void) paginator:(RKObjectPaginator *)paginator didLoadObjects:(NSArray *)objects forPage:(NSUInteger)page {
+    
+    for(Post* post in objects) {
+        if( [post isKindOfClass: [Post class]] && !post.hasDownloadedVideoValue ) {
+            [GIFDownloader sendAsynchronousRequest: post.picture
+                                  downloadFilePath: post.pathToCachedVideo
+                                 thumbnailFilePath: post.pathToThumbnail
+                                         completed: ^(NSString *outputFilePath, NSError *error) {
+                                             Post* local = [Post findFirstByAttribute: @"primaryKey" withValue: post.primaryKey];
+                                             if( error ) {
+                                                 [Flurry logError: @"Decoder" message: @"Error" error: error];
+                                             }
+                                             else {
+                                                 local.hasDownloadedVideoValue = YES;
+                                             }
+                                             
+                                             [kGlobalObjectManager().objectStore save: nil];
+                                         }];
+        }
+    }
+    
     if( paginator.hasNextPage ) {
         [paginator loadNextPage];
     }
