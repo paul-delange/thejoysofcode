@@ -108,6 +108,7 @@
     // Dispose of any resources that can be recreated.
 }
 
+/*
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     NSString* identifier = segue.identifier;
@@ -129,7 +130,7 @@
         
         [detailVC setDetailItem: post];
     }
-}
+}*/
 
 - (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     return YES;
@@ -301,7 +302,7 @@
 #pragma mark - UITableViewDelegate
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    static const NSInteger kFreeVideoLimit = 5;
+    static const NSInteger kFreeVideoLimit = 50;
     NSInteger watchedCount = [[NSUserDefaults standardUserDefaults] integerForKey: kUserPreferenceHasWatchedVideoCount];
     NSInteger warningCount = floorf( kFreeVideoLimit * .75 );
     
@@ -364,7 +365,13 @@
     
     NSAssert([[NSFileManager defaultManager] fileExistsAtPath: post.pathToCachedVideo], @"No video for this post: %@", post);
     
-    [self.detailViewController setDetailItem: post];
+    if( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+        [self.detailViewController setDetailItem: post];
+    else {
+        DetailViewController* vc = [self.storyboard instantiateViewControllerWithIdentifier: @"DetailViewController"];
+        [vc setDetailItem: post];
+        [self.navigationController pushViewController: vc animated: YES];
+    }
 }
 
 #pragma mark - RKConfigurationDelegate

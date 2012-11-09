@@ -182,6 +182,7 @@
 		52FDD31D16413F550042CCDC /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		DA638E951641A2AC0005E263 /* TumblrObjectPaginator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TumblrObjectPaginator.h; sourceTree = "<group>"; };
 		DA638E961641A2AD0005E263 /* TumblrObjectPaginator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TumblrObjectPaginator.m; sourceTree = "<group>"; };
+		DAAB69E2164C3FE900D380C1 /* NSData+Base64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -263,6 +264,7 @@
 				52D031031649379C00CF1C20 /* TimeScroller */,
 				52260B78163EB439009ABEF9 /* Hpple */,
 				52260B61163EA507009ABEF9 /* Mogenerator */,
+				DAAB69E2164C3FE900D380C1 /* NSData+Base64.h */,
 			);
 			name = Vendor;
 			sourceTree = "<group>";
@@ -728,7 +730,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = TheJoysOfCode/TheJoysOfCode.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
