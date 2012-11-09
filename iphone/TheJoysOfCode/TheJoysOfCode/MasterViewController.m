@@ -24,7 +24,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate, TimeScrollerDelegate> {
+@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate, TimeScrollerDelegate, UIPageViewControllerDataSource, UIPageViewControllerDelegate> {
     BOOL loading;
 }
 
@@ -371,10 +371,32 @@
     if( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
         [self.detailViewController setDetailItem: post];
     else {
-        
         DetailViewController* vc = [self.storyboard instantiateViewControllerWithIdentifier: @"DetailViewController"];
         [vc setDetailItem: post];
-        [self.navigationController pushViewController: vc animated: YES];
+        
+        if( SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
+            NSDictionary* options = @{
+            UIPageViewControllerOptionSpineLocationKey : @(UIPageViewControllerSpineLocationNone),
+            UIPageViewControllerOptionInterPageSpacingKey : @(0)
+            };
+            
+            UIPageViewController* pageViewController = [[UIPageViewController alloc] initWithTransitionStyle: UIPageViewControllerTransitionStyleScroll
+                                                                                       navigationOrientation: UIPageViewControllerNavigationOrientationHorizontal
+                                                                                                     options: options];
+            pageViewController.dataSource = self;
+            pageViewController.delegate = self;
+            [pageViewController setViewControllers: @[vc]
+                                         direction: UIPageViewControllerNavigationDirectionForward
+                                          animated: NO
+                                        completion: ^(BOOL finished) {
+                                            
+                                        }];
+            [self.navigationController pushViewController: pageViewController animated: YES];
+            
+        }
+        else {
+            [self.navigationController pushViewController: vc animated: YES];
+        }
     }
 }
 
@@ -475,4 +497,42 @@
         [self.timeScroller scrollViewDidEndDecelerating];
     }
 }
+
+#pragma mark - UIPageViewControllerDataSource
+- (UIViewController*) pageViewController:(UIPageViewController *)pageViewController viewControllerAfterViewController:(UIViewController *)viewController {
+    NSAssert([viewController isKindOfClass: [DetailViewController class]], @"%@ was not of type DetailViewController", viewController);
+    DetailViewController* current = (DetailViewController*)viewController;
+    NSIndexPath* currentPath = [self.tableController indexPathForObject: current.detailItem];
+    
+    if( currentPath.row >= [self tableView: self.tableView numberOfRowsInSection: 0] ) {
+        return nil;
+    }
+    else {
+        NSIndexPath* nextPath = [NSIndexPath indexPathForRow: currentPath.row+1 inSection: currentPath.section];
+        Post* post = [self.tableController objectAtIndexPath: nextPath];
+        DetailViewController* vc = [self.storyboard instantiateViewControllerWithIdentifier: @"DetailViewController"];
+        [vc setDetailItem: post];
+        return vc;
+    }
+}
+
+- (UIViewController*) pageViewController:(UIPageViewController *)pageViewController viewControllerBeforeViewController:(UIViewController *)viewController {
+    NSAssert([viewController isKindOfClass: [DetailViewController class]], @"%@ was not of type DetailViewController", viewController);
+    DetailViewController* current = (DetailViewController*)viewController;
+    NSIndexPath* currentPath = [self.tableController indexPathForObject: current.detailItem];
+    
+    NSLog(@"Row: %d Section: %d", currentPath.row, currentPath.section);
+    
+    if( currentPath.row < 1 ) {
+        return nil;
+    }
+    else {
+        NSIndexPath* nextPath = [NSIndexPath indexPathForRow: currentPath.row-1 inSection: currentPath.section];
+        Post* post = [self.tableController objectAtIndexPath: nextPath];
+        DetailViewController* vc = [self.storyboard instantiateViewControllerWithIdentifier: @"DetailViewController"];
+        [vc setDetailItem: post];
+        return vc;
+    }
+}
+
 @end
