@@ -317,15 +317,17 @@
         [alert show];
         [tableView deselectRowAtIndexPath: indexPath animated: YES];
         
-        NSUInteger count = [[NSUserDefaults standardUserDefaults] integerForKey: kUserPreferenceHasWatchedVideoCount];
-        count++;
-        [[NSUserDefaults standardUserDefaults] setInteger: count forKey: kUserPreferenceHasWatchedVideoCount];
+        watchedCount++;
+        [[NSUserDefaults standardUserDefaults] setInteger: watchedCount forKey: kUserPreferenceHasWatchedVideoCount];
         [[NSUserDefaults standardUserDefaults] synchronize];
         
         return;
     }
     
     if( watchedCount > kFreeVideoLimit ) {
+#if TARGET_IPHONE_SIMULATOR
+        
+#else
         if( !isPro() ) {
             [[MKStoreManager sharedManager] buyFeature: kSubscriptionIdentifier
                                             onComplete: ^(NSString *purchasedFeature,
@@ -359,6 +361,7 @@
             [tableView deselectRowAtIndexPath: indexPath animated: YES];
             return;
         }
+#endif
     }
     
     Post* post = [self.tableController objectAtIndexPath: indexPath];
@@ -368,6 +371,7 @@
     if( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
         [self.detailViewController setDetailItem: post];
     else {
+        
         DetailViewController* vc = [self.storyboard instantiateViewControllerWithIdentifier: @"DetailViewController"];
         [vc setDetailItem: post];
         [self.navigationController pushViewController: vc animated: YES];

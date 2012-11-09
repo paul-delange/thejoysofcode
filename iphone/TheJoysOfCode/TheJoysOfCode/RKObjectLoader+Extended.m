@@ -24,7 +24,7 @@ NSString* kOnWillMapDataKey = @"onWillMapData";
 
 - (RKObjectMappingResult*)mapResponseWithMappingProvider:(RKObjectMappingProvider*)mappingProvider toObject:(id)targetObject inContext:(RKObjectMappingProviderContext)context error:(NSError**)error {
     
-    RKLogTrace(@"bodyAsString: %@", [self.response bodyAsString]);
+   // NSLog(@"bodyAsString: %@", [self.response bodyAsString]);
     
     id parsedData = [NSJSONSerialization JSONObjectWithData: self.response.body
                                                     options: 0

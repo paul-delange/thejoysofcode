@@ -26,3 +26,9 @@
 
     FOUNDATION_EXTERN inline BOOL isPro();
 #endif
+
+
+// 1 : ads are on, 0 : adds are off
+#define BUILD_WITH_ADS  1
+
+#define SYSTEM_VERSION_GREATER_THAN(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)

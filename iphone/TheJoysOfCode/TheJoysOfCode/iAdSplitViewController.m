@@ -21,6 +21,7 @@
 
 @implementation iAdSplitViewController
 
+#if BUILD_WITH_ADS
 - (void) loadView {
     [super loadView];
     
@@ -45,6 +46,7 @@
     self.contentView = contentView;
     self.adView = banner;
 }
+#endif
 
 - (void) viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
