@@ -24,14 +24,17 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate, TimeScrollerDelegate, UIPageViewControllerDataSource, UIPageViewControllerDelegate> {
+@interface MasterViewController () <NSFetchedResultsControllerDelegate, UITableViewDataSource, UITabBarControllerDelegate, RKObjectPaginatorDelegate, RKConfigurationDelegate, TimeScrollerDelegate, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate> {
     BOOL loading;
+    NSMutableArray* searchItems;
 }
 
 @property (strong, nonatomic) NSFetchedResultsController* tableController;
+@property (strong, nonatomic) UISearchDisplayController* searchController;
 @property (strong, nonatomic) TumblrObjectPaginator* objectPaginator;
 @property (strong, nonatomic) TimeScroller* timeScroller;
 @property (weak, nonatomic) UIView* sectionHeaderView;
+@property (weak, nonatomic) UISearchBar* searchBar;
 
 @end
 
@@ -49,6 +52,7 @@
                                                  name: RKReachabilityWasDeterminedNotification
                                                object: nil];
     
+    searchItems = [NSMutableArray new];
     
     [super awakeFromNib];
 }
@@ -100,6 +104,15 @@
     self.objectPaginator.configurationDelegate = self;
     
     self.timeScroller = [[TimeScroller alloc] initWithDelegate: self];
+    
+    UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame: CGRectMake(0, 0, CGRectGetWidth(self.view.frame), 44)];
+    searchBar.barStyle = UIBarStyleBlackOpaque;
+    self.searchController = [[UISearchDisplayController alloc] initWithSearchBar: searchBar contentsController: self];
+    self.searchController.delegate = self;
+    self.searchController.searchResultsDataSource = self;
+    self.searchController.searchResultsDelegate = self;
+    self.tableView.tableHeaderView = searchBar;
+    self.searchBar = searchBar;
 }
 
 - (void)didReceiveMemoryWarning
@@ -244,27 +257,33 @@
 
 #pragma mark - UITableViewDataSource
 - (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.tableController.sections.count;
+    return tableView == self.tableView ? self.tableController.sections.count : 1;
 }
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     id<NSFetchedResultsSectionInfo> info = self.tableController.sections[section];
-    return [info numberOfObjects];
+    return tableView == self.tableView ? [info numberOfObjects] : searchItems.count;
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier: @"PostCell"];
-    Post* post = [self.tableController objectAtIndexPath: indexPath];
+    
+    if( !cell ) {
+        cell = [[UITableViewCell alloc] initWithStyle: UITableViewCellStyleSubtitle reuseIdentifier: @"PostCell"];
+        cell.selectionStyle = UITableViewCellSelectionStyleGray;
+    }
+    
+    Post* post = tableView == self.tableView ? [self.tableController objectAtIndexPath: indexPath] : searchItems[indexPath.row];
     
     cell.imageView.image = post.thumbnail;
     cell.textLabel.text = post.title;
     cell.detailTextLabel.text = post.author;
-    
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     return cell;
 }
 
 - (UIView*) tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    if( [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] ) {
+    if( [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] || tableView != self.tableView) {
         return nil;
     }
     else {
@@ -292,7 +311,7 @@
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] ? 0 : 50.f;
+    return tableView == self.tableView ? [[NSUserDefaults standardUserDefaults] boolForKey: kUserPreferenceHasUsedPushNotifications] ? 0 : 50.f : 0.f;
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -364,7 +383,7 @@
 #endif
     }
     
-    Post* post = [self.tableController objectAtIndexPath: indexPath];
+    Post* post = tableView == self.tableView ? [self.tableController objectAtIndexPath: indexPath] : searchItems[indexPath.row];
     
     NSAssert([[NSFileManager defaultManager] fileExistsAtPath: post.pathToCachedVideo], @"No video for this post: %@", post);
     
@@ -398,6 +417,8 @@
             [self.navigationController pushViewController: vc animated: YES];
         }
     }
+    
+    [self.searchBar resignFirstResponder];
 }
 
 #pragma mark - RKConfigurationDelegate
@@ -533,6 +554,17 @@
         [vc setDetailItem: post];
         return vc;
     }
+}
+
+#pragma mark - UISearchDisplayControllerDelegate
+- (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
+{
+    [searchItems removeAllObjects];
+    NSPredicate* searchPredicate = [NSPredicate predicateWithFormat: @"title CONTAINS[cd] %@ AND hasDownloadedVideo = YES", searchString];
+    NSArray* allItems = self.tableController.fetchedObjects;
+    NSArray* filtered = [allItems filteredArrayUsingPredicate: searchPredicate];
+    [searchItems addObjectsFromArray: filtered];
+    return YES;
 }
 
 @end
